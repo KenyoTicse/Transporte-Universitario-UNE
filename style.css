@@ -1,18 +1,149 @@
+/* Configuración General */
+:root {
+    --azul-une: #0047AB;
+    --azul-oscuro: #002855;
+    --blanco: #ffffff;
+    --gris-fondo: #f4f7f6;
+    --rojo-error: #dc2626;
+    --verde-exito: #16a34a;
+}
+
+body {
+    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: var(--gris-fondo);
+    color: #333;
+}
+
+/* Contenedor Universal */
+.container {
+    max-width: 500px;
+    margin: 0 auto;
+    padding: 20px;
+    text-align: center;
+}
+
+/* --- PANTALLA DE LOGIN --- */
+.login-card {
+    background: var(--blanco);
+    padding: 40px 20px;
+    border-radius: 20px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    margin-top: 50px;
+}
+
+.login-card h1 {
+    color: var(--azul-une);
+    margin-bottom: 5px;
+}
+
+.login-card p {
+    color: #666;
+    margin-bottom: 30px;
+}
+
+input {
+    width: 100%;
+    padding: 12px;
+    margin: 10px 0;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-sizing: border-box; /* Evita que el input se salga del borde */
+}
+
+button {
+    width: 100%;
+    padding: 14px;
+    background-color: var(--azul-une);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.3s;
+    margin-top: 10px;
+}
+
+button:hover {
+    background-color: var(--azul-oscuro);
+}
+
+/* --- PANTALLA DE RUTAS --- */
+.route-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.route-btn {
+    background: var(--blanco);
+    color: var(--azul-une);
+    border: 2px solid var(--azul-une);
+    padding: 20px;
+    font-size: 18px;
+    border-radius: 12px;
+}
+
+.route-btn:hover {
+    background: var(--azul-une);
+    color: white;
+}
+
+/* --- PANEL DE CONTROL (MAPA Y BOTONES) --- */
+.panel-header {
+    background: var(--azul-une);
+    color: white;
+    padding: 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+#map {
+    height: 400px;
+    width: 100%;
+    background: #e5e5e5;
+    margin: 15px 0;
+    border-radius: 15px;
+}
+
+.controls {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.btn-reportar { background-color: var(--azul-une); }
+.btn-no-subi { background-color: var(--rojo-error); }
+.btn-compartir { background-color: var(--verde-exito); }
+
+/* --- DISEÑO PARA ADMIN (4 MAPAS) --- */
 .admin-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 10px;
-    padding: 10px;
-    height: 70vh;
 }
-.mini-map {
-    height: 200px;
-    background: #ddd;
-    border-radius: 8px;
-}
-.mini-map-card {
+
+.mini-map-box {
     background: white;
-    padding: 10px;
-    border: 1px solid #eee;
-    text-align: left;
+    padding: 5px;
+    border-radius: 8px;
+    font-size: 12px;
+}
+
+.mini-map {
+    height: 150px;
+    background: #ddd;
+    border-radius: 5px;
+}
+
+/* --- LINKS DE WHATSAPP --- */
+.wa-link {
+    display: block;
+    margin-top: 15px;
+    color: #25D366;
+    text-decoration: none;
+    font-weight: bold;
 }
