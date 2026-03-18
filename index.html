@@ -1,14 +1,19 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Somos Cantuta - UNE</title>
-    <link rel="stylesheet" href="style.css">
-</head>
-<body>
-    <div id="app"></div>
-    <script src="script.js"></script>
-    <script async src="https://maps.googleapis.com/maps/api/js?callback=initMap"></script>
-</body>
-</html>
+<div id="pantalla-login" class="container">
+    <h2>Somos Cantuta</h2>
+    <input type="text" id="usuarioInput" placeholder="Usuario">
+    <input type="password" id="claveInput" placeholder="Contraseña">
+    <button onclick="login()">INGRESAR</button>
+</div>
+
+<div id="pantalla-rutas" style="display:none;">
+    <h3>Bienvenido, selecciona tu ruta</h3>
+    <button onclick="verMapa('UNI')">Ruta UNI</button>
+    <button onclick="verMapa('Bolognesi')">Ruta Bolognesi</button>
+</div>
+
+<div id="pantalla-admin" style="display:none;">
+    <h3>Panel de Control Administrativo</h3>
+    <p>Reportes generados automáticamente...</p>
+    <div class="grid-mapas">
+        </div>
+</div>
