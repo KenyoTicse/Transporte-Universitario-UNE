@@ -3,31 +3,55 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Somos Cantuta - UNE</title>
+    <title>Somos Cantuta - Sistema de Movilidad UNE</title>
     
     <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
     <style>
-        body, html { margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; height: 100%; background: #f0f2f5; }
-        .login-container { display: flex; height: 100vh; }
-        .login-blue { flex: 1.2; background: #0047AB; color: white; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 40px; text-align: center;}
-        .login-white { flex: 1; background: white; display: flex; justify-content: center; align-items: center; }
-        .login-form { width: 320px; text-align: center; display: flex; flex-direction: column; gap: 15px; }
-        .input-field { padding: 12px; border: 1px solid #ccc; border-radius: 25px; outline: none; }
-        .btn-main { padding: 14px; background: #002855; color: white; border: none; border-radius: 25px; cursor: pointer; font-weight: bold; }
-        .header { background: #0047AB; color: white; padding: 15px 25px; display: flex; justify-content: space-between; align-items: center; }
-        .btn-exit { background: rgba(255,255,255,0.2); border: 1px solid white; color: white; padding: 5px 15px; border-radius: 5px; cursor: pointer; }
-        .dashboard-layout { display: flex; height: calc(100vh - 60px); }
-        .sidebar { width: 260px; background: white; border-right: 1px solid #ddd; padding: 20px; }
-        .map-area { flex: 1; padding: 20px; }
-        .btn-blue { background: #0047AB; color: white; border: none; padding: 12px; border-radius: 8px; margin-bottom: 10px; width: 100%; cursor: pointer; }
-        .btn-green { background: #16a34a; color: white; border: none; padding: 12px; border-radius: 8px; width: 100%; cursor: pointer; }
-        .btn-red { background: #dc2626; color: white; border: none; padding: 12px; border-radius: 8px; width: 100%; cursor: pointer; }
-        .route-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 30px; }
-        .route-card { padding: 30px; background: white; border: 2px solid #0047AB; color: #0047AB; border-radius: 15px; font-weight: bold; cursor: pointer; }
-        .route-card:hover { background: #0047AB; color: white; }
+        * { box-sizing: border-box; }
+        body, html { margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; height: 100vh; background-color: #fff; overflow: hidden; }
+        
+        /* LOGIN */
+        .login-screen { display: flex; height: 100vh; }
+        .login-left { flex: 1.2; background: #0047AB; color: white; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 20px; }
+        .login-right { flex: 1; display: flex; justify-content: center; align-items: center; background: white; }
+        .login-card { width: 320px; text-align: center; }
+        .input-box { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ccc; border-radius: 25px; outline: none; }
+        .btn-login { width: 100%; padding: 12px; background: #002855; color: white; border: none; border-radius: 25px; cursor: pointer; font-weight: bold; margin-top: 10px; }
+
+        /* HEADER */
+        .admin-header { background: #0047AB; color: white; padding: 10px 25px; display: flex; justify-content: space-between; align-items: center; height: 55px; }
+        .btn-salir { background: transparent; border: 1px solid white; color: white; padding: 5px 15px; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        .btn-salir:hover { background: white; color: #0047AB; }
+
+        /* LAYOUT PRINCIPAL */
+        .admin-layout { display: flex; height: calc(100vh - 165px); } /* Restamos header y footer */
+        
+        /* SIDEBAR (Basado en tu imagen) */
+        .admin-sidebar { width: 280px; padding: 20px; border-right: 1px solid #eee; overflow-y: auto; display: flex; flex-direction: column; gap: 20px; }
+        .sidebar-title { color: red; font-weight: bold; font-size: 14px; margin-bottom: 10px; display: block; }
+        .btn-reportes { background: #4454d4; color: white; border: none; padding: 15px; border-radius: 20px; width: 100%; cursor: pointer; font-weight: bold; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .admin-info { color: #0047AB; font-size: 13px; font-weight: bold; line-height: 1.6; }
+        
+        .permiso-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+        .ruta-label { color: red; font-weight: bold; font-size: 11px; width: 100px; }
+        .badge { padding: 8px 15px; border-radius: 10px; color: white; font-weight: bold; font-size: 11px; min-width: 90px; text-align: center; }
+        .badge.denegado { background: #ff1a1a; }
+        .badge.habilitado { background: #22c55e; }
+
+        /* GRILLA DE MAPAS */
+        .maps-container { flex: 1; padding: 20px; display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 30px; background: white; }
+        .map-box { position: relative; border: 4px solid red; border-radius: 5px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .map-box h3 { position: absolute; top: -35px; color: black; font-weight: bold; font-size: 14px; }
+        .map-text { color: red; font-weight: bold; font-size: 18px; }
+
+        /* FOOTER (Resumen inferior) */
+        .admin-footer { height: 110px; border-top: 1px solid #eee; display: flex; justify-content: space-around; align-items: center; padding: 10px; background: white; }
+        .footer-item { text-align: center; font-size: 13px; }
+        .footer-item h4 { margin: 0 0 5px 0; font-size: 14px; font-weight: bold; }
+        .footer-item p { margin: 2px 0; color: #333; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -37,96 +61,145 @@
         const { useState } = React;
 
         function App() {
-            const [rol, setRol] = useState(null);
             const [pantalla, setPantalla] = useState("login");
-            const [user, setUser] = useState(null);
-            const [ruta, setRuta] = useState("");
-
-            const db = {
-                "20223691": { pass: "2022", tipo: "Estudiante", nombre: "KENYO TICSE" },
-                "12345678": { pass: "1234", tipo: "Conductor", nombre: "CONDUCTOR UNE" },
-                "Admin": { pass: "AdminSC", tipo: "Administrativo", nombre: "ADMIN GENERAL" }
-            };
+            const [user, setUser] = useState("");
 
             const handleLogin = (e) => {
                 e.preventDefault();
                 const u = e.target.user.value;
                 const p = e.target.pass.value;
-                const t = e.target.tipo.value;
+                const r = e.target.rol.value;
 
-                if (db[u] && db[u].pass === p && db[u].tipo === t) {
-                    setRol(t);
-                    setUser(db[u]);
-                    setPantalla(t === "Administrativo" ? "panel" : "rutas");
+                if (r === "Administrativo" && u === "Admin" && p === "AdminSC") {
+                    setPantalla("admin");
                 } else {
-                    alert("Usuario, clave o rol incorrectos");
+                    alert("Para esta prueba usa: Admin / AdminSC / Administrativo");
                 }
             };
 
+            // VISTA DE INICIO DE SESIÓN
             if (pantalla === "login") {
                 return (
-                    <div className="login-container">
-                        <div className="login-blue">
-                            <h1>Somos Cantuta</h1>
-                            <p>Movilidad UNE en tiempo real</p>
+                    <div className="login-screen">
+                        <div className="login-left">
+                            <h1 style={{fontSize: '3rem', margin: 0}}>Somos Cantuta</h1>
+                            <p style={{fontSize: '1.2rem'}}>Movilidad Universitaria UNE</p>
                         </div>
-                        <div className="login-white">
-                            <form onSubmit={handleLogin} className="login-form">
-                                <img src="https://upload.wikimedia.org/wikipedia/commons/e/ea/Logo_UNE.png" width="80" style={{margin: "0 auto"}}/>
-                                <h2>Iniciar Sesión</h2>
-                                <select name="tipo" className="input-field" required>
-                                    <option value="">Selecciona tu Rol</option>
+                        <div className="login-right">
+                            <form className="login-card" onSubmit={handleLogin}>
+                                <img src="https://upload.wikimedia.org/wikipedia/commons/e/ea/Logo_UNE.png" width="80" alt="Logo" />
+                                <h2 style={{color: '#0047AB'}}>Iniciar Sesión</h2>
+                                <select name="rol" className="input-box" required>
+                                    <option value="">Selecciona Rol</option>
                                     <option value="Estudiante">Estudiante</option>
                                     <option value="Conductor">Conductor</option>
                                     <option value="Administrativo">Administrativo</option>
                                 </select>
-                                <input name="user" placeholder="Usuario / Código" className="input-field" required />
-                                <input name="pass" type="password" placeholder="Contraseña" className="input-field" required />
-                                <button type="submit" className="btn-main">INGRESAR</button>
+                                <input name="user" className="input-box" placeholder="Usuario" required />
+                                <input name="pass" type="password" className="input-box" placeholder="Contraseña" required />
+                                <button type="submit" className="btn-login">INGRESAR</button>
                             </form>
                         </div>
                     </div>
                 );
             }
 
-            if (pantalla === "rutas") {
-                return (
-                    <div>
-                        <header className="header">
-                            <span>Bienvenido, {user.nombre}</span>
-                            <button onClick={() => window.location.reload()} className="btn-exit">Salir</button>
-                        </header>
-                        <div style={{padding: '40px', textAlign: 'center'}}>
-                            <h3>Selecciona tu Ruta</h3>
-                            <div className="route-grid">
-                                {["Bolognesi", "UNI", "Santa Anita", "Puente Nuevo"].map(r => (
-                                    <button key={r} className="route-card" onClick={() => {setRuta(r); setPantalla("panel")}}>Ruta {r}</button>
-                                ))}
-                            </div>
-                        </div>
-                    </div>
-                );
-            }
-
+            // VISTA ADMINISTRATIVA (BASADA EN TU IMAGEN)
             return (
-                <div>
-                    <header className="header">
-                        <span>🚍 {rol}: {ruta || "Administración"}</span>
-                        <button onClick={() => setPantalla(rol === "Administrativo" ? "login" : "rutas")} className="btn-exit">Volver</button>
+                <div style={{height: '100vh', display: 'flex', flexDirection: 'column'}}>
+                    <header className="admin-header">
+                        <div style={{display: 'flex', alignItems: 'center', gap: '10px'}}>
+                            <span>🚍</span>
+                            <b style={{fontSize: '14px'}}>Administrativo: Administración</b>
+                        </div>
+                        <button className="btn-salir" onClick={() => setPantalla("login")}>CERRAR SESIÓN</button>
                     </header>
-                    <div className="dashboard-layout">
-                        <aside className="sidebar">
-                            <h3>Opciones</h3>
-                            {rol === "Estudiante" && <button className="btn-blue">📍 Estoy en Paradero</button>}
-                            {rol === "Conductor" && <button className="btn-green">🟢 Compartir GPS</button>}
-                            {rol === "Administrativo" && <button className="btn-blue">📋 Ver Reportes</button>}
+
+                    <div className="admin-layout">
+                        {/* SIDEBAR IZQUIERDA */}
+                        <aside className="admin-sidebar">
+                            <div>
+                                <span className="sidebar-title">OPCIONES</span>
+                                <button className="btn-reportes">VER REPORTES</button>
+                            </div>
+
+                            <div>
+                                <span className="sidebar-title">AGREGAR ADMINISTRADOR</span>
+                                <div className="admin-info">
+                                    USUARIO:<br/>
+                                    CONTRASEÑA:
+                                </div>
+                            </div>
+
+                            <div>
+                                <span className="sidebar-title" style={{color: '#0047AB'}}>COADMINISTRADOR 1</span>
+                                
+                                <div className="permiso-row">
+                                    <span className="ruta-label">RUTA BOLOGNESI</span>
+                                    <span className="badge denegado">DENEGADO</span>
+                                </div>
+
+                                <div className="permiso-row">
+                                    <span className="ruta-label">RUTA PUENTE SANTA ANITA</span>
+                                    <span className="badge habilitado">HABILITADO</span>
+                                </div>
+
+                                <div className="permiso-row">
+                                    <span className="ruta-label">RUTA UNI</span>
+                                    <span className="badge habilitado">HABILITADO</span>
+                                </div>
+
+                                <div className="permiso-row">
+                                    <span className="ruta-label">RUTA PUENTE NUEVO</span>
+                                    <span className="badge habilitado">HABILITADO</span>
+                                </div>
+                            </div>
                         </aside>
-                        <main className="map-area">
-                            <div style={{background: '#ddd', height: '100%', borderRadius: '15px', display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
-                                <b>Mapa de Ruta {ruta} - Cargando...</b>
+
+                        {/* GRILLA DE 4 MAPAS */}
+                        <main className="maps-container">
+                            <div className="map-box">
+                                <h3>BOLOGNESI</h3>
+                                <span className="map-text">MAPA</span>
+                            </div>
+                            <div className="map-box">
+                                <h3>PUENTE SANTA ANITA</h3>
+                                <span className="map-text">MAPA</span>
+                            </div>
+                            <div className="map-box">
+                                <h3>UNI</h3>
+                                <span className="map-text">MAPA</span>
+                            </div>
+                            <div className="map-box">
+                                <h3>PUENTE NUEVO</h3>
+                                <span className="map-text">MAPA</span>
                             </div>
                         </main>
                     </div>
+
+                    {/* RESUMEN INFERIOR */}
+                    <footer className="admin-footer">
+                        <div className="footer-item">
+                            <h4>RUTA UNI</h4>
+                            <p>PARADERO A LLEGAR:</p>
+                            <p>TIEMPO DE LLEGADA:</p>
+                        </div>
+                        <div className="footer-item">
+                            <h4>RUTA PUENTE NUEVO</h4>
+                            <p>PARADERO A LLEGAR:</p>
+                            <p>TIEMPO DE LLEGADA:</p>
+                        </div>
+                        <div className="footer-item">
+                            <h4>RUTA BOLOGNESI</h4>
+                            <p>PARADERO A LLEGAR:</p>
+                            <p>TIEMPO DE LLEGADA:</p>
+                        </div>
+                        <div className="footer-item">
+                            <h4>RUTA PUENTE SANTA ANITA</h4>
+                            <p>PARADERO A LLEGAR:</p>
+                            <p>TIEMPO DE LLEGADA:</p>
+                        </div>
+                    </footer>
                 </div>
             );
         }
