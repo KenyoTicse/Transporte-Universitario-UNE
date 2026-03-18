@@ -10,31 +10,31 @@
     <style>
         :root {
             --primary: #002855; --secondary: #0047AB; --accent: #3b82f6;
-            --success: #16a34a; --danger: #dc2626; --light: #f8fafc; --dark: #1e293b;
+            --success: #16a34a; --danger: #dc2626; --light: #f8fafc;
         }
         * { box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
         body, html { margin: 0; padding: 0; background: var(--light); height: 100vh; overflow: hidden; }
         
-        /* Utilidades */
-        .flex-row { display: flex; }
-        .flex-col { display: flex; flex-direction: column; }
-        .btn { border: none; border-radius: 8px; cursor: pointer; font-weight: 600; transition: 0.3s; padding: 10px; }
-        .card { background: white; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); padding: 15px; }
-        
-        /* Layout */
+        /* LOGIN ORIGINAL */
+        .login-container { display: flex; height: 100vh; }
+        .login-blue { flex: 1.2; background: var(--secondary); color: white; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 40px; text-align: center;}
+        .login-white { flex: 1; background: white; display: flex; justify-content: center; align-items: center; }
+        .login-form { width: 320px; text-align: center; display: flex; flex-direction: column; gap: 15px; }
+        .input-field { padding: 12px; border: 1px solid #ccc; border-radius: 25px; outline: none; }
+        .btn-main { padding: 14px; background: var(--primary); color: white; border: none; border-radius: 25px; cursor: pointer; font-weight: bold; }
+
+        /* LAYOUT GENERAL PANELES */
         .navbar { background: var(--primary); color: white; padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; height: 60px; }
         .sidebar { width: 280px; background: white; border-right: 1px solid #e2e8f0; padding: 20px; height: calc(100vh - 60px); overflow-y: auto; }
         .main-view { flex: 1; padding: 20px; height: calc(100vh - 60px); overflow-y: auto; }
         
-        /* Componentes Específicos */
-        .map-placeholder { flex: 1; background: #e2e8f0; border: 2px solid var(--secondary); border-radius: 15px; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; min-height: 200px; }
-        .map-label { position: absolute; top: 10px; left: 10px; background: var(--secondary); color: white; padding: 4px 12px; border-radius: 20px; font-size: 12px; }
-        .status-badge { padding: 5px 12px; border-radius: 20px; font-size: 11px; font-weight: bold; text-transform: uppercase; color: white; }
-        .grid-maps { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 20px; height: 100%; }
-        
-        /* Botones de Navegación del Estudiante */
-        .btn-ruta { background: var(--secondary); color: white; margin-bottom: 10px; text-align: left; padding: 15px; }
-        .btn-ruta:hover { background: var(--primary); transform: translateX(5px); }
+        /* ELEMENTOS DE DISEÑO (BOCETOS) */
+        .card { background: white; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); padding: 15px; }
+        .map-placeholder { flex: 1; background: #f1f5f9; border: 3px solid var(--danger); border-radius: 10px; display: flex; align-items: center; justify-content: center; position: relative; }
+        .map-label { position: absolute; top: -12px; background: white; padding: 0 10px; font-weight: bold; font-size: 13px; color: black; }
+        .status-badge { padding: 6px 12px; border-radius: 8px; font-size: 10px; font-weight: bold; color: white; }
+        .grid-maps { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 30px; height: 100%; padding-top: 15px; }
+        .btn-ruta-blue { background: var(--secondary); color: white; border: none; padding: 12px; border-radius: 20px; width: 100%; cursor: pointer; text-align: center; font-weight: bold; margin-bottom: 8px; }
     </style>
 </head>
 <body>
@@ -43,58 +43,86 @@
     <script type="text/babel">
         const { useState } = React;
 
-        function App() {
-            const [rol, setRol] = useState("login"); // login, admin, conductor, estudiante
-            const [selectedRuta, setSelectedRuta] = useState("UNI");
+        const db = {
+            "20223691": { pass: "2022", tipo: "Estudiante", nombre: "KENYO TICSE" },
+            "12345678": { pass: "1234", tipo: "Conductor", nombre: "CONDUCTOR UNE" },
+            "Admin": { pass: "AdminSC", tipo: "Administrativo", nombre: "ADMIN GENERAL" }
+        };
 
-            const Login = () => (
-                <div style={{height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(135deg, #002855 0%, #0047AB 100%)'}}>
-                    <div className="card" style={{width: '350px', textAlign: 'center', padding: '40px'}}>
-                        <h2 style={{color: var(--primary)}}>Somos Cantuta</h2>
-                        <p>Selecciona un panel para probar:</p>
-                        <button className="btn btn-ruta" style={{width: '100%'}} onClick={() => setRol("admin")}>PANEL ADMINISTRATIVO</button>
-                        <button className="btn btn-ruta" style={{width: '100%'}} onClick={() => setRol("conductor")}>PANEL CONDUCTOR</button>
-                        <button className="btn btn-ruta" style={{width: '100%'}} onClick={() => setRol("estudiante")}>PANEL ESTUDIANTE</button>
+        function App() {
+            const [pantalla, setPantalla] = useState("login");
+            const [user, setUser] = useState(null);
+            const [rutaSel, setRutaSel] = useState("UNI");
+
+            const handleLogin = (e) => {
+                e.preventDefault();
+                const u = e.target.user.value;
+                const p = e.target.pass.value;
+                const t = e.target.tipo.value;
+
+                if (db[u] && db[u].pass === p && db[u].tipo === t) {
+                    setUser(db[u]);
+                    setPantalla(t);
+                } else {
+                    alert("Datos incorrectos");
+                }
+            };
+
+            const Navbar = () => (
+                <div className="navbar">
+                    <div style={{display:'flex', alignItems:'center', gap:'10px'}}>
+                        <span>🚍</span>
+                        <b>{user.tipo.toUpperCase()}: {user.nombre}</b>
                     </div>
+                    <button onClick={() => window.location.reload()} style={{background:'none', border:'1px solid white', color:'white', padding:'5px 10px', borderRadius:'5px', cursor:'pointer'}}>CERRAR SESIÓN</button>
                 </div>
             );
 
-            const Navbar = ({titulo}) => (
-                <nav className="navbar">
-                    <div style={{display: 'flex', alignItems: 'center', gap: '10px'}}>
-                        <span style={{fontSize: '20px'}}>🚍</span>
-                        <b style={{fontSize: '14px'}}>{titulo}</b>
+            // --- PANTALLA LOGIN (DISEÑO ORIGINAL) ---
+            if (pantalla === "login") {
+                return (
+                    <div className="login-container">
+                        <div className="login-blue">
+                            <h1 style={{fontSize:'3rem', margin:0}}>Somos Cantuta</h1>
+                            <p>Movilidad UNE en tiempo real</p>
+                        </div>
+                        <div className="login-white">
+                            <form onSubmit={handleLogin} className="login-form">
+                                <img src="https://upload.wikimedia.org/wikipedia/commons/e/ea/Logo_UNE.png" width="80" style={{margin: "0 auto"}}/>
+                                <h2>Iniciar Sesión</h2>
+                                <select name="tipo" className="input-field" required>
+                                    <option value="">Selecciona tu Rol</option>
+                                    <option value="Estudiante">Estudiante</option>
+                                    <option value="Conductor">Conductor</option>
+                                    <option value="Administrativo">Administrativo</option>
+                                </select>
+                                <input name="user" placeholder="Usuario / Código" className="input-field" required />
+                                <input name="pass" type="password" placeholder="Contraseña" className="input-field" required />
+                                <button type="submit" className="btn-main">INGRESAR</button>
+                            </form>
+                        </div>
                     </div>
-                    <button className="btn" style={{background: 'rgba(255,255,255,0.2)', color: 'white'}} onClick={() => setRol("login")}>CERRAR SESIÓN</button>
-                </nav>
-            );
+                );
+            }
 
-            // --- VISTA ADMINISTRADOR ---
-            if (rol === "admin") return (
-                <div className="flex-col">
-                    <Navbar titulo="ADMINISTRATIVO: GESTIÓN GENERAL" />
-                    <div className="flex-row">
-                        <aside className="sidebar flex-col" style={{gap: '25px'}}>
-                            <div>
-                                <small style={{color: '#64748b', fontWeight: 'bold'}}>OPCIONES</small>
-                                <button className="btn" style={{width: '100%', background: var(--accent), color: 'white', marginTop: '10px'}}>📊 VER REPORTES</button>
+            // --- PANEL ADMINISTRATIVO (DISEÑO BOCETO) ---
+            if (pantalla === "Administrativo") return (
+                <div style={{display:'flex', flexDirection:'column', height:'100vh'}}>
+                    <Navbar />
+                    <div style={{display:'flex', flex:1}}>
+                        <aside className="sidebar">
+                            <b style={{color: 'red', fontSize: '12px'}}>OPCIONES</b>
+                            <button className="btn-ruta-blue" style={{marginTop:'10px'}}>VER REPORTES</button>
+                            <div style={{marginTop:'20px'}}>
+                                <b style={{color: 'red', fontSize: '12px'}}>AGREGAR ADMINISTRADOR</b>
+                                <p style={{fontSize:'12px', color: 'blue', margin:'5px 0'}}>USUARIO:<br/>CONTRASEÑA:</p>
                             </div>
-                            <div>
-                                <small style={{color: '#64748b', fontWeight: 'bold'}}>AGREGAR ADMINISTRADOR</small>
-                                <input placeholder="Usuario" style={{width: '100%', padding: '8px', marginTop: '5px', borderRadius: '5px', border: '1px solid #ddd'}} />
-                                <input type="password" placeholder="Contraseña" style={{width: '100%', padding: '8px', marginTop: '5px', borderRadius: '5px', border: '1px solid #ddd'}} />
-                            </div>
-                            <div className="flex-col" style={{gap: '10px'}}>
-                                <small style={{color: '#64748b', fontWeight: 'bold'}}>ESTADO COADMINISTRADORES</small>
-                                {[
-                                    {r: "Bolognesi", s: "DENEGADO", c: "var(--danger)"},
-                                    {r: "Santa Anita", s: "HABILITADO", c: "var(--success)"},
-                                    {r: "UNI", s: "HABILITADO", c: "var(--success)"},
-                                    {r: "Puente Nuevo", s: "HABILITADO", c: "var(--success)"}
-                                ].map(item => (
-                                    <div key={item.r} style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
-                                        <span style={{fontSize: '11px', fontWeight: '600'}}>{item.r.toUpperCase()}</span>
-                                        <span className="status-badge" style={{background: item.c}}>{item.s}</span>
+                            <div style={{marginTop:'20px'}}>
+                                <b style={{color: 'blue', fontSize: '12px'}}>COADMINISTRADOR 1</b>
+                                {["Ruta Bolognesi", "Ruta P. Santa Anita", "Ruta UNI", "Ruta P. Nuevo"].map((r, i) => (
+                                    <div key={r} style={{display:'flex', justifyContent:'space-between', marginTop:'10px', alignItems:'center'}}>
+                                        <span style={{fontSize:'10px', color:'red', fontWeight:'bold'}}>{r.toUpperCase()}</span>
+                                        <span className="status-badge" style={{background: i===0 ? 'red' : '#22c55e'}}>{i===0 ? 'DENEGADO' : 'HABILITADO'}</span>
                                     </div>
                                 ))}
                             </div>
@@ -104,94 +132,72 @@
                                 {["BOLOGNESI", "PUENTE SANTA ANITA", "UNI", "PUENTE NUEVO"].map(m => (
                                     <div key={m} className="map-placeholder">
                                         <span className="map-label">{m}</span>
-                                        <b style={{color: '#94a3b8'}}>CARGANDO MAPA EN VIVO...</b>
-                                    </div>
-                                ))}
-                            </div>
-                            <div className="card" style={{marginTop: '20px', display: 'flex', justifyContent: 'space-around', background: '#f1f5f9'}}>
-                                {["UNI", "PUEBLO NUEVO", "BOLOGNESI", "SANTA ANITA"].map(r => (
-                                    <div key={r} style={{fontSize: '12px'}}>
-                                        <b style={{color: var(--secondary)}}>RUTA {r}</b>
-                                        <div style={{color: '#64748b'}}>Llega a: <b>Tagore</b></div>
-                                        <div style={{color: '#64748b'}}>Tiempo: <b>8 min</b></div>
+                                        <b style={{color:'red'}}>MAPA</b>
                                     </div>
                                 ))}
                             </div>
                         </main>
                     </div>
+                    <footer style={{height:'100px', background:'white', borderTop:'1px solid #eee', display:'flex', justifyContent:'space-around', alignItems:'center'}}>
+                         {["UNI", "PUENTE NUEVO", "BOLOGNESI", "PUENTE SANTA ANITA"].map(r => (
+                             <div key={r} style={{fontSize:'11px', textAlign:'center'}}>
+                                 <b>RUTA {r}</b><br/>PARADERO A LLEGAR:<br/>TIEMPO DE LLEGADA:
+                             </div>
+                         ))}
+                    </footer>
                 </div>
             );
 
-            // --- VISTA CONDUCTOR ---
-            if (rol === "conductor") return (
-                <div className="flex-col">
-                    <Navbar titulo="PANEL DEL CONDUCTOR" />
-                    <div className="flex-row">
+            // --- PANEL CONDUCTOR (DISEÑO BOCETO) ---
+            if (pantalla === "Conductor") return (
+                <div style={{display:'flex', flexDirection:'column', height:'100vh'}}>
+                    <Navbar />
+                    <div style={{display:'flex', flex:1}}>
                         <aside className="sidebar">
-                            <h3 style={{color: var(--primary), margin: '0 0 20px 0'}}>DATOS PERSONALES</h3>
-                            <div style={{background: '#f1f5f9', padding: '15px', borderRadius: '10px', marginBottom: '20px'}}>
-                                <p style={{margin: '5px 0'}}><b>NOMBRE:</b> JUAN PÉREZ</p>
-                                <p style={{margin: '5px 0'}}><b>PLACA:</b> <span style={{color: var(--success)}}>EGB-452</span></p>
-                            </div>
-                            <div className="flex-col" style={{gap: '10px'}}>
-                                {["RUTA UNI", "RUTA BOLOGNESI", "RUTA SANTA ANITA", "RUTA PUENTE NUEVO"].map(r => (
-                                    <button key={r} className={`btn ${selectedRuta === r ? 'btn-ruta' : ''}`} style={{border: '1px solid #ddd', textAlign: 'left'}} onClick={() => setSelectedRuta(r)}>
-                                        {r}
-                                    </button>
-                                ))}
-                            </div>
-                            <div className="card" style={{marginTop: '30px', borderLeft: '5px solid var(--success)'}}>
-                                <b style={{color: var(--success)}}>🔔 NOTIFICACIÓN</b>
-                                <p style={{fontSize: '13px', margin: '5px 0'}}><b>5 ESTUDIANTES</b> esperando en:</p>
-                                <p style={{color: var(--danger), fontWeight: 'bold'}}>PARADERO: HUAYCÁN</p>
-                                <span className="status-badge" style={{background: var(--danger), display: 'inline-block', marginTop: '5px'}}>BUS LLENO</span>
+                            <b>CONDUCTOR DATOS PERSONALES</b>
+                            <p style={{color:'green', fontWeight:'bold'}}>PLACA: EGB-123</p>
+                            {["RUTA UNI", "RUTA BOLOGNESI", "RUTA SANTA ANITA", "RUTA PUENTE NUEVO"].map(r => (
+                                <p key={r} style={{color:'red', fontWeight:'bold', fontSize:'13px', cursor:'pointer'}} onClick={() => setRutaSel(r)}>{r}</p>
+                            ))}
+                            <div style={{marginTop:'40px'}}>
+                                <b style={{color:'green'}}>NOTIFICACIÓN</b><br/>
+                                <span style={{color:'green'}}>5 ESTUDIANTES PARADERO: HUAYCAN</span><br/>
+                                <b style={{color:'red'}}>BUS LLENO</b>
                             </div>
                         </aside>
                         <main className="main-view flex-col">
-                            <div className="map-placeholder" style={{border: '4px solid var(--success)'}}>
-                                <span className="map-label" style={{background: var(--success)}}>MI UBICACIÓN ACTUAL - {selectedRuta}</span>
-                                <button className="btn" style={{background: var(--danger), color: 'white', padding: '20px 40px', fontSize: '18px'}}>COMPARTIR UBICACIÓN</button>
+                            <div className="map-placeholder" style={{borderColor: 'green'}}>
+                                <b style={{color:'red', fontSize:'30px'}}>COMPARTIR UBICACIÓN</b>
                             </div>
                         </main>
                     </div>
                 </div>
             );
 
-            // --- VISTA ESTUDIANTE ---
-            if (rol === "estudiante") return (
-                <div className="flex-col">
-                    <Navbar titulo="PANEL DEL ESTUDIANTE" />
-                    <div className="flex-row">
+            // --- PANEL ESTUDIANTE (DISEÑO BOCETO) ---
+            if (pantalla === "Estudiante") return (
+                <div style={{display:'flex', flexDirection:'column', height:'100vh'}}>
+                    <Navbar />
+                    <div style={{display:'flex', flex:1}}>
                         <aside className="sidebar">
-                            <h3 style={{color: var(--primary), margin: '0 0 20px 0'}}>MIS RUTAS</h3>
-                            <div className="flex-col">
-                                {["RUTA UNI", "RUTA PUENTE NUEVO", "RUTA SANTA ANITA", "RUTA BOLOGNESI"].map(r => (
-                                    <button key={r} className="btn btn-ruta" onClick={() => setSelectedRuta(r)}>{r.toLowerCase()}</button>
-                                ))}
-                            </div>
-                            <button className="btn" style={{marginTop: '20px', color: var(--danger), background: 'none', textAlign: 'left'}}>⚠️ reportar problema</button>
+                            <b>DATOS PERSONALES</b><br/><br/>
+                            {["RUTA UNI", "RUTA PUENTE NUEVO", "RUTA SANTA ANITA", "RUTA BOLOGNESI"].map(r => (
+                                <button key={r} className="btn-ruta-blue" onClick={() => setRutaSel(r)}>{r.toLowerCase()}</button>
+                            ))}
+                            <p style={{color:'red', marginTop:'20px'}}>reporte</p>
                         </aside>
-                        <main className="main-view flex-row" style={{gap: '20px'}}>
-                            <div className="flex-col" style={{flex: 1, gap: '20px'}}>
-                                <div className="card" style={{borderLeft: '5px solid var(--accent)'}}>
-                                    <h2 style={{color: var(--secondary), margin: '0'}}>{selectedRuta}</h2>
-                                    <h3 style={{color: var(--danger)}}>BUS LLEGANDO EN 15 MIN</h3>
-                                </div>
-                                <div className="flex-col" style={{gap: '10px'}}>
-                                    <button className="btn" style={{background: '#25D366', color: 'white'}}>WHATSAPP RUTA</button>
-                                    <button className="btn" style={{background: '#128C7E', color: 'white'}}>WHATSAPP CANAL</button>
-                                </div>
+                        <main className="main-view" style={{display:'flex', gap:'20px'}}>
+                            <div style={{flex:1}}>
+                                <h3 style={{color:'red'}}>{rutaSel.toUpperCase()}<br/>BUS LLEGANDO EN 15 MIN</h3>
+                                <p style={{color:'red', fontWeight:'bold'}}>WHATSAPP RUTA<br/>WHATSAPP CANAL</p>
                             </div>
-                            <div className="map-placeholder" style={{flex: 2}}>
-                                <span className="map-label">MAPA DE SEGUIMIENTO</span>
-                                <b style={{color: '#94a3b8'}}>SIGUIENDO BUS EN TIEMPO REAL...</b>
+                            <div className="map-placeholder" style={{flex:2}}>
+                                <b style={{color:'red', fontSize:'30px'}}>MAPA</b>
                             </div>
                         </main>
                     </div>
                 </div>
             );
-
-            return <Login />;
         }
 
         const root = ReactDOM.createRoot(document.getElementById('root'));
