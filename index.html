@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Movilidad UNE</title>
+  <style>
+    body { font-family: Arial; text-align: center; }
+    #map { height: 500px; width: 100%; }
+  </style>
+</head>
+
+<body>
+
+<h1>Movilidad UNE</h1>
+
+<select id="ruta">
+  <option>Bolognesi</option>
+  <option>UNI</option>
+  <option>Puente Santa Anita</option>
+  <option>Puente Nuevo</option>
+</select>
+
+<div id="map"></div>
+
+<script src="script.js"></script>
+<script async
+src="https://maps.googleapis.com/maps/api/js?key=TU_API_KEY&callback=initMap">
+</script>
+
+</body>
+</html>
