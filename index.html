@@ -3,55 +3,38 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Somos Cantuta - Sistema de Movilidad UNE</title>
-    
+    <title>Somos Cantuta - Sistema Integral UNE</title>
     <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-
     <style>
-        * { box-sizing: border-box; }
-        body, html { margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; height: 100vh; background-color: #fff; overflow: hidden; }
+        :root {
+            --primary: #002855; --secondary: #0047AB; --accent: #3b82f6;
+            --success: #16a34a; --danger: #dc2626; --light: #f8fafc; --dark: #1e293b;
+        }
+        * { box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+        body, html { margin: 0; padding: 0; background: var(--light); height: 100vh; overflow: hidden; }
         
-        /* LOGIN */
-        .login-screen { display: flex; height: 100vh; }
-        .login-left { flex: 1.2; background: #0047AB; color: white; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 20px; }
-        .login-right { flex: 1; display: flex; justify-content: center; align-items: center; background: white; }
-        .login-card { width: 320px; text-align: center; }
-        .input-box { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ccc; border-radius: 25px; outline: none; }
-        .btn-login { width: 100%; padding: 12px; background: #002855; color: white; border: none; border-radius: 25px; cursor: pointer; font-weight: bold; margin-top: 10px; }
-
-        /* HEADER */
-        .admin-header { background: #0047AB; color: white; padding: 10px 25px; display: flex; justify-content: space-between; align-items: center; height: 55px; }
-        .btn-salir { background: transparent; border: 1px solid white; color: white; padding: 5px 15px; border-radius: 5px; cursor: pointer; font-weight: bold; }
-        .btn-salir:hover { background: white; color: #0047AB; }
-
-        /* LAYOUT PRINCIPAL */
-        .admin-layout { display: flex; height: calc(100vh - 165px); } /* Restamos header y footer */
+        /* Utilidades */
+        .flex-row { display: flex; }
+        .flex-col { display: flex; flex-direction: column; }
+        .btn { border: none; border-radius: 8px; cursor: pointer; font-weight: 600; transition: 0.3s; padding: 10px; }
+        .card { background: white; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); padding: 15px; }
         
-        /* SIDEBAR (Basado en tu imagen) */
-        .admin-sidebar { width: 280px; padding: 20px; border-right: 1px solid #eee; overflow-y: auto; display: flex; flex-direction: column; gap: 20px; }
-        .sidebar-title { color: red; font-weight: bold; font-size: 14px; margin-bottom: 10px; display: block; }
-        .btn-reportes { background: #4454d4; color: white; border: none; padding: 15px; border-radius: 20px; width: 100%; cursor: pointer; font-weight: bold; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        .admin-info { color: #0047AB; font-size: 13px; font-weight: bold; line-height: 1.6; }
+        /* Layout */
+        .navbar { background: var(--primary); color: white; padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; height: 60px; }
+        .sidebar { width: 280px; background: white; border-right: 1px solid #e2e8f0; padding: 20px; height: calc(100vh - 60px); overflow-y: auto; }
+        .main-view { flex: 1; padding: 20px; height: calc(100vh - 60px); overflow-y: auto; }
         
-        .permiso-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
-        .ruta-label { color: red; font-weight: bold; font-size: 11px; width: 100px; }
-        .badge { padding: 8px 15px; border-radius: 10px; color: white; font-weight: bold; font-size: 11px; min-width: 90px; text-align: center; }
-        .badge.denegado { background: #ff1a1a; }
-        .badge.habilitado { background: #22c55e; }
-
-        /* GRILLA DE MAPAS */
-        .maps-container { flex: 1; padding: 20px; display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 30px; background: white; }
-        .map-box { position: relative; border: 4px solid red; border-radius: 5px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-        .map-box h3 { position: absolute; top: -35px; color: black; font-weight: bold; font-size: 14px; }
-        .map-text { color: red; font-weight: bold; font-size: 18px; }
-
-        /* FOOTER (Resumen inferior) */
-        .admin-footer { height: 110px; border-top: 1px solid #eee; display: flex; justify-content: space-around; align-items: center; padding: 10px; background: white; }
-        .footer-item { text-align: center; font-size: 13px; }
-        .footer-item h4 { margin: 0 0 5px 0; font-size: 14px; font-weight: bold; }
-        .footer-item p { margin: 2px 0; color: #333; font-weight: bold; }
+        /* Componentes Específicos */
+        .map-placeholder { flex: 1; background: #e2e8f0; border: 2px solid var(--secondary); border-radius: 15px; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; min-height: 200px; }
+        .map-label { position: absolute; top: 10px; left: 10px; background: var(--secondary); color: white; padding: 4px 12px; border-radius: 20px; font-size: 12px; }
+        .status-badge { padding: 5px 12px; border-radius: 20px; font-size: 11px; font-weight: bold; text-transform: uppercase; color: white; }
+        .grid-maps { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 20px; height: 100%; }
+        
+        /* Botones de Navegación del Estudiante */
+        .btn-ruta { background: var(--secondary); color: white; margin-bottom: 10px; text-align: left; padding: 15px; }
+        .btn-ruta:hover { background: var(--primary); transform: translateX(5px); }
     </style>
 </head>
 <body>
@@ -61,147 +44,154 @@
         const { useState } = React;
 
         function App() {
-            const [pantalla, setPantalla] = useState("login");
-            const [user, setUser] = useState("");
+            const [rol, setRol] = useState("login"); // login, admin, conductor, estudiante
+            const [selectedRuta, setSelectedRuta] = useState("UNI");
 
-            const handleLogin = (e) => {
-                e.preventDefault();
-                const u = e.target.user.value;
-                const p = e.target.pass.value;
-                const r = e.target.rol.value;
-
-                if (r === "Administrativo" && u === "Admin" && p === "AdminSC") {
-                    setPantalla("admin");
-                } else {
-                    alert("Para esta prueba usa: Admin / AdminSC / Administrativo");
-                }
-            };
-
-            // VISTA DE INICIO DE SESIÓN
-            if (pantalla === "login") {
-                return (
-                    <div className="login-screen">
-                        <div className="login-left">
-                            <h1 style={{fontSize: '3rem', margin: 0}}>Somos Cantuta</h1>
-                            <p style={{fontSize: '1.2rem'}}>Movilidad Universitaria UNE</p>
-                        </div>
-                        <div className="login-right">
-                            <form className="login-card" onSubmit={handleLogin}>
-                                <img src="https://upload.wikimedia.org/wikipedia/commons/e/ea/Logo_UNE.png" width="80" alt="Logo" />
-                                <h2 style={{color: '#0047AB'}}>Iniciar Sesión</h2>
-                                <select name="rol" className="input-box" required>
-                                    <option value="">Selecciona Rol</option>
-                                    <option value="Estudiante">Estudiante</option>
-                                    <option value="Conductor">Conductor</option>
-                                    <option value="Administrativo">Administrativo</option>
-                                </select>
-                                <input name="user" className="input-box" placeholder="Usuario" required />
-                                <input name="pass" type="password" className="input-box" placeholder="Contraseña" required />
-                                <button type="submit" className="btn-login">INGRESAR</button>
-                            </form>
-                        </div>
+            const Login = () => (
+                <div style={{height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(135deg, #002855 0%, #0047AB 100%)'}}>
+                    <div className="card" style={{width: '350px', textAlign: 'center', padding: '40px'}}>
+                        <h2 style={{color: var(--primary)}}>Somos Cantuta</h2>
+                        <p>Selecciona un panel para probar:</p>
+                        <button className="btn btn-ruta" style={{width: '100%'}} onClick={() => setRol("admin")}>PANEL ADMINISTRATIVO</button>
+                        <button className="btn btn-ruta" style={{width: '100%'}} onClick={() => setRol("conductor")}>PANEL CONDUCTOR</button>
+                        <button className="btn btn-ruta" style={{width: '100%'}} onClick={() => setRol("estudiante")}>PANEL ESTUDIANTE</button>
                     </div>
-                );
-            }
+                </div>
+            );
 
-            // VISTA ADMINISTRATIVA (BASADA EN TU IMAGEN)
-            return (
-                <div style={{height: '100vh', display: 'flex', flexDirection: 'column'}}>
-                    <header className="admin-header">
-                        <div style={{display: 'flex', alignItems: 'center', gap: '10px'}}>
-                            <span>🚍</span>
-                            <b style={{fontSize: '14px'}}>Administrativo: Administración</b>
-                        </div>
-                        <button className="btn-salir" onClick={() => setPantalla("login")}>CERRAR SESIÓN</button>
-                    </header>
+            const Navbar = ({titulo}) => (
+                <nav className="navbar">
+                    <div style={{display: 'flex', alignItems: 'center', gap: '10px'}}>
+                        <span style={{fontSize: '20px'}}>🚍</span>
+                        <b style={{fontSize: '14px'}}>{titulo}</b>
+                    </div>
+                    <button className="btn" style={{background: 'rgba(255,255,255,0.2)', color: 'white'}} onClick={() => setRol("login")}>CERRAR SESIÓN</button>
+                </nav>
+            );
 
-                    <div className="admin-layout">
-                        {/* SIDEBAR IZQUIERDA */}
-                        <aside className="admin-sidebar">
+            // --- VISTA ADMINISTRADOR ---
+            if (rol === "admin") return (
+                <div className="flex-col">
+                    <Navbar titulo="ADMINISTRATIVO: GESTIÓN GENERAL" />
+                    <div className="flex-row">
+                        <aside className="sidebar flex-col" style={{gap: '25px'}}>
                             <div>
-                                <span className="sidebar-title">OPCIONES</span>
-                                <button className="btn-reportes">VER REPORTES</button>
+                                <small style={{color: '#64748b', fontWeight: 'bold'}}>OPCIONES</small>
+                                <button className="btn" style={{width: '100%', background: var(--accent), color: 'white', marginTop: '10px'}}>📊 VER REPORTES</button>
                             </div>
-
                             <div>
-                                <span className="sidebar-title">AGREGAR ADMINISTRADOR</span>
-                                <div className="admin-info">
-                                    USUARIO:<br/>
-                                    CONTRASEÑA:
-                                </div>
+                                <small style={{color: '#64748b', fontWeight: 'bold'}}>AGREGAR ADMINISTRADOR</small>
+                                <input placeholder="Usuario" style={{width: '100%', padding: '8px', marginTop: '5px', borderRadius: '5px', border: '1px solid #ddd'}} />
+                                <input type="password" placeholder="Contraseña" style={{width: '100%', padding: '8px', marginTop: '5px', borderRadius: '5px', border: '1px solid #ddd'}} />
                             </div>
-
-                            <div>
-                                <span className="sidebar-title" style={{color: '#0047AB'}}>COADMINISTRADOR 1</span>
-                                
-                                <div className="permiso-row">
-                                    <span className="ruta-label">RUTA BOLOGNESI</span>
-                                    <span className="badge denegado">DENEGADO</span>
-                                </div>
-
-                                <div className="permiso-row">
-                                    <span className="ruta-label">RUTA PUENTE SANTA ANITA</span>
-                                    <span className="badge habilitado">HABILITADO</span>
-                                </div>
-
-                                <div className="permiso-row">
-                                    <span className="ruta-label">RUTA UNI</span>
-                                    <span className="badge habilitado">HABILITADO</span>
-                                </div>
-
-                                <div className="permiso-row">
-                                    <span className="ruta-label">RUTA PUENTE NUEVO</span>
-                                    <span className="badge habilitado">HABILITADO</span>
-                                </div>
+                            <div className="flex-col" style={{gap: '10px'}}>
+                                <small style={{color: '#64748b', fontWeight: 'bold'}}>ESTADO COADMINISTRADORES</small>
+                                {[
+                                    {r: "Bolognesi", s: "DENEGADO", c: "var(--danger)"},
+                                    {r: "Santa Anita", s: "HABILITADO", c: "var(--success)"},
+                                    {r: "UNI", s: "HABILITADO", c: "var(--success)"},
+                                    {r: "Puente Nuevo", s: "HABILITADO", c: "var(--success)"}
+                                ].map(item => (
+                                    <div key={item.r} style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
+                                        <span style={{fontSize: '11px', fontWeight: '600'}}>{item.r.toUpperCase()}</span>
+                                        <span className="status-badge" style={{background: item.c}}>{item.s}</span>
+                                    </div>
+                                ))}
                             </div>
                         </aside>
-
-                        {/* GRILLA DE 4 MAPAS */}
-                        <main className="maps-container">
-                            <div className="map-box">
-                                <h3>BOLOGNESI</h3>
-                                <span className="map-text">MAPA</span>
+                        <main className="main-view flex-col">
+                            <div className="grid-maps">
+                                {["BOLOGNESI", "PUENTE SANTA ANITA", "UNI", "PUENTE NUEVO"].map(m => (
+                                    <div key={m} className="map-placeholder">
+                                        <span className="map-label">{m}</span>
+                                        <b style={{color: '#94a3b8'}}>CARGANDO MAPA EN VIVO...</b>
+                                    </div>
+                                ))}
                             </div>
-                            <div className="map-box">
-                                <h3>PUENTE SANTA ANITA</h3>
-                                <span className="map-text">MAPA</span>
-                            </div>
-                            <div className="map-box">
-                                <h3>UNI</h3>
-                                <span className="map-text">MAPA</span>
-                            </div>
-                            <div className="map-box">
-                                <h3>PUENTE NUEVO</h3>
-                                <span className="map-text">MAPA</span>
+                            <div className="card" style={{marginTop: '20px', display: 'flex', justifyContent: 'space-around', background: '#f1f5f9'}}>
+                                {["UNI", "PUEBLO NUEVO", "BOLOGNESI", "SANTA ANITA"].map(r => (
+                                    <div key={r} style={{fontSize: '12px'}}>
+                                        <b style={{color: var(--secondary)}}>RUTA {r}</b>
+                                        <div style={{color: '#64748b'}}>Llega a: <b>Tagore</b></div>
+                                        <div style={{color: '#64748b'}}>Tiempo: <b>8 min</b></div>
+                                    </div>
+                                ))}
                             </div>
                         </main>
                     </div>
-
-                    {/* RESUMEN INFERIOR */}
-                    <footer className="admin-footer">
-                        <div className="footer-item">
-                            <h4>RUTA UNI</h4>
-                            <p>PARADERO A LLEGAR:</p>
-                            <p>TIEMPO DE LLEGADA:</p>
-                        </div>
-                        <div className="footer-item">
-                            <h4>RUTA PUENTE NUEVO</h4>
-                            <p>PARADERO A LLEGAR:</p>
-                            <p>TIEMPO DE LLEGADA:</p>
-                        </div>
-                        <div className="footer-item">
-                            <h4>RUTA BOLOGNESI</h4>
-                            <p>PARADERO A LLEGAR:</p>
-                            <p>TIEMPO DE LLEGADA:</p>
-                        </div>
-                        <div className="footer-item">
-                            <h4>RUTA PUENTE SANTA ANITA</h4>
-                            <p>PARADERO A LLEGAR:</p>
-                            <p>TIEMPO DE LLEGADA:</p>
-                        </div>
-                    </footer>
                 </div>
             );
+
+            // --- VISTA CONDUCTOR ---
+            if (rol === "conductor") return (
+                <div className="flex-col">
+                    <Navbar titulo="PANEL DEL CONDUCTOR" />
+                    <div className="flex-row">
+                        <aside className="sidebar">
+                            <h3 style={{color: var(--primary), margin: '0 0 20px 0'}}>DATOS PERSONALES</h3>
+                            <div style={{background: '#f1f5f9', padding: '15px', borderRadius: '10px', marginBottom: '20px'}}>
+                                <p style={{margin: '5px 0'}}><b>NOMBRE:</b> JUAN PÉREZ</p>
+                                <p style={{margin: '5px 0'}}><b>PLACA:</b> <span style={{color: var(--success)}}>EGB-452</span></p>
+                            </div>
+                            <div className="flex-col" style={{gap: '10px'}}>
+                                {["RUTA UNI", "RUTA BOLOGNESI", "RUTA SANTA ANITA", "RUTA PUENTE NUEVO"].map(r => (
+                                    <button key={r} className={`btn ${selectedRuta === r ? 'btn-ruta' : ''}`} style={{border: '1px solid #ddd', textAlign: 'left'}} onClick={() => setSelectedRuta(r)}>
+                                        {r}
+                                    </button>
+                                ))}
+                            </div>
+                            <div className="card" style={{marginTop: '30px', borderLeft: '5px solid var(--success)'}}>
+                                <b style={{color: var(--success)}}>🔔 NOTIFICACIÓN</b>
+                                <p style={{fontSize: '13px', margin: '5px 0'}}><b>5 ESTUDIANTES</b> esperando en:</p>
+                                <p style={{color: var(--danger), fontWeight: 'bold'}}>PARADERO: HUAYCÁN</p>
+                                <span className="status-badge" style={{background: var(--danger), display: 'inline-block', marginTop: '5px'}}>BUS LLENO</span>
+                            </div>
+                        </aside>
+                        <main className="main-view flex-col">
+                            <div className="map-placeholder" style={{border: '4px solid var(--success)'}}>
+                                <span className="map-label" style={{background: var(--success)}}>MI UBICACIÓN ACTUAL - {selectedRuta}</span>
+                                <button className="btn" style={{background: var(--danger), color: 'white', padding: '20px 40px', fontSize: '18px'}}>COMPARTIR UBICACIÓN</button>
+                            </div>
+                        </main>
+                    </div>
+                </div>
+            );
+
+            // --- VISTA ESTUDIANTE ---
+            if (rol === "estudiante") return (
+                <div className="flex-col">
+                    <Navbar titulo="PANEL DEL ESTUDIANTE" />
+                    <div className="flex-row">
+                        <aside className="sidebar">
+                            <h3 style={{color: var(--primary), margin: '0 0 20px 0'}}>MIS RUTAS</h3>
+                            <div className="flex-col">
+                                {["RUTA UNI", "RUTA PUENTE NUEVO", "RUTA SANTA ANITA", "RUTA BOLOGNESI"].map(r => (
+                                    <button key={r} className="btn btn-ruta" onClick={() => setSelectedRuta(r)}>{r.toLowerCase()}</button>
+                                ))}
+                            </div>
+                            <button className="btn" style={{marginTop: '20px', color: var(--danger), background: 'none', textAlign: 'left'}}>⚠️ reportar problema</button>
+                        </aside>
+                        <main className="main-view flex-row" style={{gap: '20px'}}>
+                            <div className="flex-col" style={{flex: 1, gap: '20px'}}>
+                                <div className="card" style={{borderLeft: '5px solid var(--accent)'}}>
+                                    <h2 style={{color: var(--secondary), margin: '0'}}>{selectedRuta}</h2>
+                                    <h3 style={{color: var(--danger)}}>BUS LLEGANDO EN 15 MIN</h3>
+                                </div>
+                                <div className="flex-col" style={{gap: '10px'}}>
+                                    <button className="btn" style={{background: '#25D366', color: 'white'}}>WHATSAPP RUTA</button>
+                                    <button className="btn" style={{background: '#128C7E', color: 'white'}}>WHATSAPP CANAL</button>
+                                </div>
+                            </div>
+                            <div className="map-placeholder" style={{flex: 2}}>
+                                <span className="map-label">MAPA DE SEGUIMIENTO</span>
+                                <b style={{color: '#94a3b8'}}>SIGUIENDO BUS EN TIEMPO REAL...</b>
+                            </div>
+                        </main>
+                    </div>
+                </div>
+            );
+
+            return <Login />;
         }
 
         const root = ReactDOM.createRoot(document.getElementById('root'));
