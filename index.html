@@ -3,49 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Movilidad UNE</title>
-    <style>
-        body { 
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
-            text-align: center; 
-            margin: 0; 
-            padding: 20px;
-            background-color: #f4f7f6;
-        }
-        h1 { color: #0047AB; }
-        #map { 
-            height: 500px; 
-            width: 100%; 
-            background: #e5e5e5; 
-            border-radius: 15px; 
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-        }
-        select { 
-            padding: 12px; 
-            margin-bottom: 20px; 
-            width: 250px; 
-            border-radius: 8px;
-            border: 1px solid #ccc;
-            font-size: 16px;
-        }
-    </style>
+    <title>Somos Cantuta - UNE</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-
-    <h1>Somos Cantuta - Movilidad UNE</h1>
-
-    <select id="ruta">
-        <option>Bolognesi</option>
-        <option>UNI</option>
-        <option>Puente Santa Anita</option>
-        <option>Puente Nuevo</option>
-    </select>
-
-    <div id="map"></div>
-
+    <div id="app"></div>
     <script src="script.js"></script>
-
     <script async src="https://maps.googleapis.com/maps/api/js?callback=initMap"></script>
-
 </body>
 </html>
