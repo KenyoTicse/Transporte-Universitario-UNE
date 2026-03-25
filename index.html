@@ -7,41 +7,83 @@
     <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
     <style>
         :root {
-            --primary: #002855; --secondary: #0047AB; --accent: #3b82f6;
-            --success: #16a34a; --danger: #dc2626; --light: #f8fafc;
+            --primary-blue: #3b82f6;
+            --dark-blue: #1e3a8a;
+            --bg-light: #f6f8fb;
+            --text-main: #334155;
+            --text-sub: #64748b;
+            --danger: #ef4444;
+            --success: #22c55e;
+            --radius: 16px;
         }
-        * { box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
-        body, html { margin: 0; padding: 0; background: var(--light); height: 100vh; overflow: hidden; }
-        
-        /* LOGIN ORIGINAL */
-        .login-container { display: flex; height: 100vh; }
-        .login-blue { flex: 1.2; background: var(--secondary); color: white; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 40px; text-align: center;}
-        .login-white { flex: 1; background: white; display: flex; justify-content: center; align-items: center; }
-        .login-form { width: 320px; text-align: center; display: flex; flex-direction: column; gap: 15px; }
-        .input-field { padding: 12px; border: 1px solid #ccc; border-radius: 25px; outline: none; }
-        .btn-main { padding: 14px; background: var(--primary); color: white; border: none; border-radius: 25px; cursor: pointer; font-weight: bold; }
 
-        /* LAYOUT GENERAL PANELES */
-        .navbar { background: var(--primary); color: white; padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; height: 60px; }
-        .sidebar { width: 280px; background: white; border-right: 1px solid #e2e8f0; padding: 20px; height: calc(100vh - 60px); overflow-y: auto; }
-        .main-view { flex: 1; padding: 20px; height: calc(100vh - 60px); overflow-y: auto; }
+        * { box-sizing: border-box; font-family: 'Inter', 'Segoe UI', sans-serif; }
+        body, html { margin: 0; padding: 0; background: var(--bg-light); height: 100vh; color: var(--text-main); }
+
+        /* LOGIN STYLE */
+        .login-container { display: flex; height: 100vh; }
+        .login-blue { flex: 1.2; background: var(--dark-blue); color: white; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; }
+        .login-white { flex: 1; background: white; display: flex; justify-content: center; align-items: center; }
+        .login-form { width: 340px; display: flex; flex-direction: column; gap: 15px; }
+        .input-field { padding: 14px; border: 1px solid #e2e8f0; border-radius: 12px; outline: none; font-size: 15px; }
+        .btn-main { padding: 14px; background: var(--primary-blue); color: white; border: none; border-radius: 12px; cursor: pointer; font-weight: 600; }
+
+        /* APP LAYOUT */
+        .app-wrapper { display: flex; height: 100vh; overflow: hidden; }
         
-        /* ELEMENTOS DE DISEÑO (BOCETOS) */
-        .card { background: white; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); padding: 15px; }
-        .map-placeholder { flex: 1; background: #f1f5f9; border: 3px solid var(--danger); border-radius: 10px; display: flex; align-items: center; justify-content: center; position: relative; }
-        .map-label { position: absolute; top: -12px; background: white; padding: 0 10px; font-weight: bold; font-size: 13px; color: black; }
-        .status-badge { padding: 6px 12px; border-radius: 8px; font-size: 10px; font-weight: bold; color: white; }
-        .grid-maps { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 30px; height: 100%; padding-top: 15px; }
-        .btn-ruta-blue { background: var(--secondary); color: white; border: none; padding: 12px; border-radius: 20px; width: 100%; cursor: pointer; text-align: center; font-weight: bold; margin-bottom: 8px; }
+        /* SIDEBAR MODERN */
+        .sidebar { width: 320px; background: white; border-right: 1px solid #e2e8f0; padding: 30px; display: flex; flex-direction: column; gap: 20px; }
+        .sidebar-label { font-size: 12px; font-weight: 700; color: var(--text-sub); text-transform: uppercase; letter-spacing: 0.05em; }
+        
+        .route-btn { 
+            display: flex; align-items: center; gap: 12px; padding: 16px; 
+            border: none; border-radius: var(--radius); background: transparent;
+            color: var(--text-sub); cursor: pointer; transition: 0.2s; font-weight: 500;
+        }
+        .route-btn.active { background: var(--primary-blue); color: white; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3); }
+        .route-btn:hover:not(.active) { background: #f1f5f9; }
+
+        .action-card { 
+            display: flex; align-items: center; gap: 12px; padding: 12px; 
+            border-radius: 12px; cursor: pointer; border: 1px solid #f1f5f9; transition: 0.2s;
+        }
+        .action-card:hover { background: #f8fafc; border-color: #e2e8f0; }
+
+        /* MAIN CONTENT */
+        .main-panel { flex: 1; padding: 40px; overflow-y: auto; }
+        .header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+        .title-red { font-size: 28px; color: var(--danger); font-weight: 800; margin: 0; }
+        
+        .pill { display: flex; align-items: center; gap: 8px; padding: 8px 16px; border-radius: 20px; font-size: 13px; font-weight: 600; }
+        .pill-blue { background: #dbeafe; color: #1e40af; }
+        .pill-green { background: #dcfce7; color: #166534; }
+
+        .content-grid { display: grid; grid-template-columns: 1fr 1.2fr; gap: 30px; }
+        
+        /* CARDS */
+        .info-card { 
+            background: white; padding: 20px; border-radius: var(--radius); 
+            border: 1px solid #e2e8f0; margin-bottom: 15px; display: flex; align-items: center; gap: 15px;
+        }
+        .card-icon { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; }
+
+        /* MAP BOX */
+        .map-container { 
+            background: white; border-radius: var(--radius); border: 1px solid #e2e8f0; 
+            overflow: hidden; display: flex; flex-direction: column; height: 500px;
+        }
+        .map-header { padding: 15px 20px; border-bottom: 1px solid #f1f5f9; display: flex; justify-content: space-between; font-size: 12px; font-weight: 700; color: var(--text-sub); }
+        .map-body { flex: 1; background: #cbd5e1; position: relative; display: flex; align-items: center; justify-content: center; overflow: hidden;}
     </style>
 </head>
 <body>
     <div id="root"></div>
 
     <script type="text/babel">
-        const { useState } = React;
+        const { useState, useEffect } = React;
 
         const db = {
             "20223691": { pass: "2022", tipo: "Estudiante", nombre: "KENYO TICSE" },
@@ -52,7 +94,7 @@
         function App() {
             const [pantalla, setPantalla] = useState("login");
             const [user, setUser] = useState(null);
-            const [rutaSel, setRutaSel] = useState("UNI");
+            const [rutaSel, setRutaSel] = useState("Ruta UNI");
 
             const handleLogin = (e) => {
                 e.preventDefault();
@@ -68,28 +110,17 @@
                 }
             };
 
-            const Navbar = () => (
-                <div className="navbar">
-                    <div style={{display:'flex', alignItems:'center', gap:'10px'}}>
-                        <span>🚍</span>
-                        <b>{user.tipo.toUpperCase()}: {user.nombre}</b>
-                    </div>
-                    <button onClick={() => window.location.reload()} style={{background:'none', border:'1px solid white', color:'white', padding:'5px 10px', borderRadius:'5px', cursor:'pointer'}}>CERRAR SESIÓN</button>
-                </div>
-            );
-
-            // --- PANTALLA LOGIN (DISEÑO ORIGINAL) ---
             if (pantalla === "login") {
                 return (
                     <div className="login-container">
                         <div className="login-blue">
-                            <h1 style={{fontSize:'3rem', margin:0}}>Somos Cantuta</h1>
-                            <p>Movilidad UNE en tiempo real</p>
+                            <h1 style={{fontSize:'3.5rem', margin:0, fontWeight: 900}}>Somos Cantuta</h1>
+                            <p style={{fontSize:'1.2rem', opacity: 0.8}}>Movilidad UNE en tiempo real</p>
                         </div>
                         <div className="login-white">
                             <form onSubmit={handleLogin} className="login-form">
-                                <img src="https://upload.wikimedia.org/wikipedia/commons/e/ea/Logo_UNE.png" width="80" style={{margin: "0 auto"}}/>
-                                <h2>Iniciar Sesión</h2>
+                                <img src="https://upload.wikimedia.org/wikipedia/commons/e/ea/Logo_UNE.png" width="80" style={{margin: "0 auto 10px"}}/>
+                                <h2 style={{marginBottom: 10}}>Bienvenido</h2>
                                 <select name="tipo" className="input-field" required>
                                     <option value="">Selecciona tu Rol</option>
                                     <option value="Estudiante">Estudiante</option>
@@ -98,104 +129,121 @@
                                 </select>
                                 <input name="user" placeholder="Usuario / Código" className="input-field" required />
                                 <input name="pass" type="password" placeholder="Contraseña" className="input-field" required />
-                                <button type="submit" className="btn-main">INGRESAR</button>
+                                <button type="submit" className="btn-main">INGRESAR AL PANEL</button>
                             </form>
                         </div>
                     </div>
                 );
             }
 
-            // --- PANEL ADMINISTRATIVO (DISEÑO BOCETO) ---
-            if (pantalla === "Administrativo") return (
-                <div style={{display:'flex', flexDirection:'column', height:'100vh'}}>
-                    <Navbar />
-                    <div style={{display:'flex', flex:1}}>
-                        <aside className="sidebar">
-                            <b style={{color: 'red', fontSize: '12px'}}>OPCIONES</b>
-                            <button className="btn-ruta-blue" style={{marginTop:'10px'}}>VER REPORTES</button>
-                            <div style={{marginTop:'20px'}}>
-                                <b style={{color: 'red', fontSize: '12px'}}>AGREGAR ADMINISTRADOR</b>
-                                <p style={{fontSize:'12px', color: 'blue', margin:'5px 0'}}>USUARIO:<br/>CONTRASEÑA:</p>
-                            </div>
-                            <div style={{marginTop:'20px'}}>
-                                <b style={{color: 'blue', fontSize: '12px'}}>COADMINISTRADOR 1</b>
-                                {["Ruta Bolognesi", "Ruta P. Santa Anita", "Ruta UNI", "Ruta P. Nuevo"].map((r, i) => (
-                                    <div key={r} style={{display:'flex', justifyContent:'space-between', marginTop:'10px', alignItems:'center'}}>
-                                        <span style={{fontSize:'10px', color:'red', fontWeight:'bold'}}>{r.toUpperCase()}</span>
-                                        <span className="status-badge" style={{background: i===0 ? 'red' : '#22c55e'}}>{i===0 ? 'DENEGADO' : 'HABILITADO'}</span>
-                                    </div>
-                                ))}
-                            </div>
-                        </aside>
-                        <main className="main-view flex-col">
-                            <div className="grid-maps">
-                                {["BOLOGNESI", "PUENTE SANTA ANITA", "UNI", "PUENTE NUEVO"].map(m => (
-                                    <div key={m} className="map-placeholder">
-                                        <span className="map-label">{m}</span>
-                                        <b style={{color:'red'}}>MAPA</b>
-                                    </div>
-                                ))}
-                            </div>
-                        </main>
-                    </div>
-                    <footer style={{height:'100px', background:'white', borderTop:'1px solid #eee', display:'flex', justifyContent:'space-around', alignItems:'center'}}>
-                         {["UNI", "PUENTE NUEVO", "BOLOGNESI", "PUENTE SANTA ANITA"].map(r => (
-                             <div key={r} style={{fontSize:'11px', textAlign:'center'}}>
-                                 <b>RUTA {r}</b><br/>PARADERO A LLEGAR:<br/>TIEMPO DE LLEGADA:
-                             </div>
-                         ))}
-                    </footer>
-                </div>
-            );
-
-            // --- PANEL CONDUCTOR (DISEÑO BOCETO) ---
-            if (pantalla === "Conductor") return (
-                <div style={{display:'flex', flexDirection:'column', height:'100vh'}}>
-                    <Navbar />
-                    <div style={{display:'flex', flex:1}}>
-                        <aside className="sidebar">
-                            <b>CONDUCTOR DATOS PERSONALES</b>
-                            <p style={{color:'green', fontWeight:'bold'}}>PLACA: EGB-123</p>
-                            {["RUTA UNI", "RUTA BOLOGNESI", "RUTA SANTA ANITA", "RUTA PUENTE NUEVO"].map(r => (
-                                <p key={r} style={{color:'red', fontWeight:'bold', fontSize:'13px', cursor:'pointer'}} onClick={() => setRutaSel(r)}>{r}</p>
+            // PANEL GENERAL (Basado en la imagen enviada)
+            return (
+                <div className="app-wrapper">
+                    {/* SIDEBAR COMPLETO */}
+                    <aside className="sidebar">
+                        <div className="sidebar-label">Datos Personales</div>
+                        <div style={{display:'flex', flexDirection:'column', gap:'8px'}}>
+                            {["Ruta UNI", "Ruta Puente Nuevo", "Ruta Puente Santa Anita", "Ruta Bolognesi"].map(r => (
+                                <button 
+                                    key={r} 
+                                    className={`route-btn ${rutaSel === r ? 'active' : ''}`}
+                                    onClick={() => setRutaSel(r)}
+                                >
+                                    <span>🚍</span> {r}
+                                </button>
                             ))}
-                            <div style={{marginTop:'40px'}}>
-                                <b style={{color:'green'}}>NOTIFICACIÓN</b><br/>
-                                <span style={{color:'green'}}>5 ESTUDIANTES PARADERO: HUAYCAN</span><br/>
-                                <b style={{color:'red'}}>BUS LLENO</b>
-                            </div>
-                        </aside>
-                        <main className="main-view flex-col">
-                            <div className="map-placeholder" style={{borderColor: 'green'}}>
-                                <b style={{color:'red', fontSize:'30px'}}>COMPARTIR UBICACIÓN</b>
-                            </div>
-                        </main>
-                    </div>
-                </div>
-            );
+                        </div>
 
-            // --- PANEL ESTUDIANTE (DISEÑO BOCETO) ---
-            if (pantalla === "Estudiante") return (
-                <div style={{display:'flex', flexDirection:'column', height:'100vh'}}>
-                    <Navbar />
-                    <div style={{display:'flex', flex:1}}>
-                        <aside className="sidebar">
-                            <b>DATOS PERSONALES</b><br/><br/>
-                            {["RUTA UNI", "RUTA PUENTE NUEVO", "RUTA SANTA ANITA", "RUTA BOLOGNESI"].map(r => (
-                                <button key={r} className="btn-ruta-blue" onClick={() => setRutaSel(r)}>{r.toLowerCase()}</button>
-                            ))}
-                            <p style={{color:'red', marginTop:'20px'}}>reporte</p>
-                        </aside>
-                        <main className="main-view" style={{display:'flex', gap:'20px'}}>
-                            <div style={{flex:1}}>
-                                <h3 style={{color:'red'}}>{rutaSel.toUpperCase()}<br/>BUS LLEGANDO EN 15 MIN</h3>
-                                <p style={{color:'red', fontWeight:'bold'}}>WHATSAPP RUTA<br/>WHATSAPP CANAL</p>
+                        <div style={{marginTop:'auto', display:'flex', flexDirection:'column', gap:'10px'}}>
+                            <div className="action-card">
+                                <span style={{fontSize:'20px'}}>🚨</span>
+                                <div>
+                                    <div style={{fontSize:'14px', fontWeight:600}}>Reporte</div>
+                                    <div style={{fontSize:'11px', color:'var(--text-sub)'}}>Incidencias y novedades</div>
+                                </div>
                             </div>
-                            <div className="map-placeholder" style={{flex:2}}>
-                                <b style={{color:'red', fontSize:'30px'}}>MAPA</b>
+                            <div className="action-card" onClick={() => window.location.reload()}>
+                                <span style={{fontSize:'20px'}}>🔴</span>
+                                <div>
+                                    <div style={{fontSize:'14px', fontWeight:600}}>Cerrar sesión</div>
+                                    <div style={{fontSize:'11px', color:'var(--text-sub)'}}>Salir de la aplicación</div>
+                                </div>
                             </div>
-                        </main>
-                    </div>
+                            
+                            <div style={{background:'#f8fafc', padding:'12px', borderRadius:'12px', display:'flex', alignItems:'center', gap:'10px'}}>
+                                <div style={{width:8, height:8, background:'var(--success)', borderRadius:'50%'}}></div>
+                                <div>
+                                    <div style={{fontSize:'11px', fontWeight:700}}>Sistema operativo</div>
+                                    <div style={{fontSize:'9px', color:'var(--text-sub)'}}>Servicios activos</div>
+                                </div>
+                            </div>
+                        </div>
+                    </aside>
+
+                    {/* CONTENIDO PRINCIPAL DINÁMICO */}
+                    <main className="main-panel">
+                        <div className="header-row">
+                            <h1 className="title-red">{rutaSel.toUpperCase()}</h1>
+                            <div style={{display:'flex', gap:'10px'}}>
+                                <div className="pill pill-blue"><span>🚌</span> Bus llegando en 15 min</div>
+                                <div className="pill pill-green"><div style={{width:6, height:6, background:'currentColor', borderRadius:'50%'}}></div> En camino</div>
+                            </div>
+                        </div>
+
+                        <div className="content-grid">
+                            <section>
+                                <div className="info-card">
+                                    <div className="card-icon" style={{background:'#fee2e2'}}>💬</div>
+                                    <div>
+                                        <div style={{fontWeight:700, fontSize:'15px', color:'#dc2626'}}>WhatsApp Ruta</div>
+                                        <div style={{fontSize:'12px', color:'var(--text-sub)'}}>Grupo de la {rutaSel}</div>
+                                    </div>
+                                </div>
+                                <div className="info-card">
+                                    <div className="card-icon" style={{background:'#fee2e2'}}>📢</div>
+                                    <div>
+                                        <div style={{fontWeight:700, fontSize:'15px', color:'#dc2626'}}>WhatsApp Canal</div>
+                                        <div style={{fontSize:'12px', color:'var(--text-sub)'}}>Canal oficial de anuncios</div>
+                                    </div>
+                                </div>
+                                <div className="info-card" style={{background:'#eff6ff', borderColor:'#bfdbfe'}}>
+                                    <div className="card-icon" style={{background:'#3b82f6', color:'white'}}>ℹ️</div>
+                                    <div>
+                                        <div style={{fontWeight:700, fontSize:'15px', color:'#1e40af'}}>Información de servicio</div>
+                                        <div style={{fontSize:'12px', color:'#1e40af', opacity:0.8}}>Próximo bus llegando a la parada principal</div>
+                                        <div style={{fontSize:'10px', marginTop:4, opacity:0.6}}>Actualizado hace 2 minutos</div>
+                                    </div>
+                                </div>
+                                <div className="info-card" style={{background:'#fffbeb', borderColor:'#fef3c7'}}>
+                                    <div className="card-icon" style={{background:'#f59e0b', color:'white'}}>💡</div>
+                                    <div>
+                                        <div style={{fontWeight:700, fontSize:'15px', color:'#92400e'}}>Consejo</div>
+                                        <div style={{fontSize:'12px', color:'#92400e'}}>Ten lista tu tarjeta para un abordaje más rápido</div>
+                                    </div>
+                                </div>
+                            </section>
+
+                            <section>
+                                <div className="map-container">
+                                    <div className="map-header">
+                                        <span>MAPA EN TIEMPO REAL</span>
+                                        <span style={{color:'var(--success)'}}>● Conectado</span>
+                                    </div>
+                                    <div className="map-body">
+                                        {/* Simulación de Mapa con Imagen Estática para el diseño */}
+                                        <img 
+                                            src={`https://maps.googleapis.com/maps/api/staticmap?center=-12.043,-77.028&zoom=14&size=600x500&key=TU_API_KEY`} 
+                                            style={{width:'100%', height:'100%', objectFit:'cover'}}
+                                            alt="Mapa"
+                                        />
+                                        <div style={{position:'absolute', color:'white', background:'rgba(0,0,0,0.5)', padding:'10px', borderRadius:'8px', fontWeight:700}}>
+                                            VISTA DE MAPA ACTIVA
+                                        </div>
+                                    </div>
+                                </div>
+                            </section>
+                        </div>
+                    </main>
                 </div>
             );
         }
