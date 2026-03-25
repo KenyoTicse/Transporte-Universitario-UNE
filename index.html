@@ -3,36 +3,32 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bus Cantuteño - Sistema Integral</title>
+    <title>Bus Cantuteño - UNE</title>
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <style>
         :root { --blue: #3b82f6; --dark: #1e3a8a; --red: #ef4444; --green: #22c55e; --bg: #f8fafc; }
-        body { margin: 0; font-family: 'Segoe UI', sans-serif; background: var(--bg); color: #1e293b; overflow: hidden; }
+        body { margin: 0; font-family: sans-serif; background: var(--bg); overflow: hidden; }
         .flex { display: flex; height: 100vh; }
-        .side { width: 280px; background: #fff; padding: 20px; display: flex; flex-direction: column; gap: 10px; border-right: 1px solid #e2e8f0; }
+        .side { width: 280px; background: #fff; padding: 20px; display: flex; flex-direction: column; gap: 10px; border-right: 1px solid #eee; }
         .main { flex: 1; padding: 25px; overflow-y: auto; }
-        .card { background: #fff; border-radius: 16px; padding: 20px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); border: 1px solid #f1f5f9; margin-bottom: 20px; }
-        .btn { padding: 12px; border-radius: 10px; border: 1px solid #e2e8f0; background: #fff; cursor: pointer; font-weight: 600; width: 100%; display: flex; align-items: center; gap: 10px; transition: 0.2s; }
-        .btn:hover { background: #f8fafc; }
+        .card { background: #fff; border-radius: 20px; padding: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 20px; border: 1px solid #f1f5f9; }
+        .btn { padding: 15px; border-radius: 12px; border: 1px solid #eee; background: #fff; cursor: pointer; font-weight: bold; width: 100%; display: flex; align-items: center; gap: 10px; text-decoration: none; color: inherit; }
         .btn-p { background: var(--blue); color: #fff; border: none; justify-content: center; }
-        .btn-p:disabled { opacity: 0.5; cursor: not-allowed; }
-        .btn.active { background: var(--blue); color: #fff; border-color: var(--blue); }
-        .grid-maps { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; }
-        .map-box { background: #eee; height: 180px; border-radius: 12px; position: relative; overflow: hidden; }
+        .btn.active { background: var(--blue); color: #fff; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
         .status { font-size: 11px; font-weight: 800; padding: 4px 8px; border-radius: 6px; text-transform: uppercase; }
         .st-red { background: #fee2e2; color: #b91c1c; }
         .st-green { background: #dcfce7; color: #166534; }
-        table { width: 100%; border-collapse: collapse; font-size: 13px; }
-        th, td { text-align: left; padding: 12px; border-bottom: 1px solid #f1f5f9; }
-        .login-screen { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        th, td { text-align: left; padding: 12px; border-bottom: 1px solid #eee; font-size: 13px; }
     </style>
 </head>
 <body>
     <div id="root"></div>
     <script type="text/babel">
-        const { useState, useEffect } = React;
+        const { useState } = React;
 
         const RUTAS_DATA = {
             "Ruta UNI": { placa: "EGB-402", cond: "Jorge Ramos", link: "https://chat.whatsapp.com/I2mw9VmXvgnL5Y7Mzuf3tj" },
@@ -40,49 +36,39 @@
             "Ruta Santa Anita": { placa: "B5F-992", cond: "M. Quispe", link: "https://chat.whatsapp.com/DcOWGPkPvpD39PvA2B7iWH" },
             "Ruta Bolognesi": { placa: "C1T-551", cond: "L. Huaman", link: "https://chat.whatsapp.com/BEAlEiyUc3QIMdM0jUpHSY" }
         };
+        const CANAL_LINK = "https://whatsapp.com/channel/0029VbCR9BS9MF8ypba5gy0o";
 
         const App = () => {
-            const [user, setUser] = useState({ logged: false, role: '', name: '' });
-            const [rutaSel, setRutaSel] = useState("Ruta UNI");
-            const [reportes, setReportes] = useState([]);
-            const [coAdmins, setCoAdmins] = useState([{id: 1, name: 'Lucas', role: 'Lector'}]);
+            const [p, setP] = useState("login");
+            const [r, setR] = useState("Ruta UNI");
+            const [reps, setReps] = useState([]);
 
-            const enviarReporte = (motivo) => {
-                const nuevoReporte = {
-                    id: Date.now(),
-                    fecha: new Date().toLocaleDateString(),
-                    hora: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
-                    conductor: RUTAS_DATA[rutaSel].cond,
-                    placa: RUTAS_DATA[rutaSel].placa,
-                    ruta: rutaSel,
-                    motivo: motivo
-                };
-                setReportes([nuevoReporte, ...reportes]);
-                alert("Reporte enviado al panel administrativo");
+            const sendRep = () => {
+                const n = { id: Date.now(), h: new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}), r, p: RUTAS_DATA[r].placa, c: RUTAS_DATA[r].cond };
+                setReps([n, ...reps]);
+                alert("Reporte enviado al administrador");
             };
 
-            const copiarTexto = (ruta) => {
-                const texto = `📌 *ESTADO DE RUTA*\n📍 RUTA: ${ruta}\n🚌 PARADERO ACTUAL: Puente Santa Anita\n⏰ LLEGADA ESTIMADA: 12:45 PM`;
-                navigator.clipboard.writeText(texto);
-                alert("Texto copiado para WhatsApp");
+            const copyInfo = (ruta) => {
+                const txt = `RUTA: ${ruta}\nPARADERO ACTUAL: Cargando...\nTIEMPO ESTIMADO: 15 min`;
+                navigator.clipboard.writeText(txt);
+                alert("Texto copiado");
             };
 
-            if (!user.logged) return (
+            if (p === "login") return (
                 <div className="flex">
-                    <div className="login-screen" style={{background: 'var(--dark)', color: '#fff'}}>
-                        <h1 style={{fontSize: '4rem', margin: 0}}>Bus cantuteño</h1>
-                        <p>Gestión Universitaria UNE</p>
+                    <div style={{flex:1.2, background:'var(--dark)', color:'#fff', display:'flex', flexDirection:'column', justifyContent:'center', alignItems:'center'}}>
+                        <h1 style={{fontSize:'4.5rem', margin:0}}>Bus cantuteño</h1>
                     </div>
-                    <div className="login-screen" style={{background: '#fff'}}>
-                        <form onSubmit={(e) => { e.preventDefault(); setUser({logged:true, role: e.target.rol.value, name: e.target.user.value}); }} style={{width: '320px', display:'flex', flexDirection:'column', gap:'15px'}}>
-                            <h2>Iniciar Sesión</h2>
+                    <div style={{flex:1, display:'flex', justifyContent:'center', alignItems:'center', background:'#fff'}}>
+                        <form onSubmit={(e) => { e.preventDefault(); setP(e.target.rol.value); }} style={{width:'300px', display:'flex', flexDirection:'column', gap:'15px'}}>
+                            <h2 style={{textAlign:'center'}}>Bienvenido</h2>
                             <select name="rol" className="btn">
-                                <option value="Estudiante">Soy Estudiante</option>
-                                <option value="Administrativo">Soy Administrador</option>
-                                <option value="Coadmin">Soy Co-Administrador (Lector)</option>
+                                <option value="Estudiante">Estudiante</option>
+                                <option value="Administrativo">Administrativo</option>
                             </select>
-                            <input name="user" placeholder="Usuario / Código" required style={{padding:'15px', borderRadius:'10px', border:'1px solid #ddd'}} />
-                            <button className="btn btn-p">INGRESAR AL SISTEMA</button>
+                            <input placeholder="Usuario o Código" className="btn" style={{textAlign:'left'}} />
+                            <button className="btn btn-p">INGRESAR</button>
                         </form>
                     </div>
                 </div>
@@ -91,112 +77,60 @@
             return (
                 <div className="flex">
                     <div className="side">
-                        <div style={{marginBottom:'20px'}}>
-                            <b>{user.name}</b><br/>
-                            <small className="status st-green">{user.role}</small>
-                        </div>
-                        
-                        {user.role === 'Estudiante' && Object.keys(RUTAS_DATA).map(r => (
-                            <button key={r} onClick={()=>setRutaSel(r)} className={`btn ${rutaSel===r?'active':''}`}>🚍 {r}</button>
+                        <b>{p} UNE</b>
+                        <small className="status st-green">Conectado</small>
+                        <hr style={{width:'100%', border:'0.5px solid #eee'}}/>
+                        {p === "Estudiante" && Object.keys(RUTAS_DATA).map(n => (
+                            <button key={n} onClick={()=>setR(n)} className={`btn ${r===n?'active':''}`}>🚍 {n}</button>
                         ))}
-
-                        {user.role === 'Administrativo' && (
-                            <>
-                                <button className="btn active">📊 Ver Reportes</button>
-                                <button className="btn">🗺️ Multivista Mapas</button>
-                            </>
-                        )}
-
-                        <button onClick={()=>setUser({logged:false})} className="btn" style={{marginTop:'auto', color:'var(--red)'}}>🚪 Cerrar Sesión</button>
+                        {p === "Administrativo" && <button className="btn active">📊 Panel Control</button>}
+                        <button onClick={()=>setP("login")} className="btn" style={{marginTop:'auto', color:'var(--red)'}}>🚪 Salir</button>
                     </div>
 
                     <main className="main">
-                        {user.role === 'Estudiante' && (
+                        {p === "Estudiante" && (
                             <div className="card">
-                                <h2>{rutaSel}</h2>
-                                <div className="grid-maps" style={{gridTemplateColumns:'1.5fr 1fr'}}>
+                                <div style={{display:'flex', justifyContent:'space-between', alignItems:'center'}}>
+                                    <h1 style={{color:'var(--red)', margin:0}}>{r}</h1>
+                                    <span className="status st-green">● En camino</span>
+                                </div>
+                                <div className="grid" style={{marginTop:'20px'}}>
                                     <div>
-                                        <p>¿El bus no se detuvo o hubo un problema?</p>
-                                        <button onClick={()=>enviarReporte("Bus no paró estando vacío")} className="btn" style={{color:'var(--red)', borderColor:'var(--red)', marginBottom:'10px'}}>🚨 El bus no paró (Estando vacío)</button>
-                                        <a href={RUTAS_DATA[rutaSel].link} target="_blank" className="btn" style={{marginBottom:'10px'}}>💬 WhatsApp de la Ruta</a>
+                                        <a href={RUTAS_DATA[r].link} target="_blank" className="btn" style={{marginBottom:'10px'}}>💬 WhatsApp Ruta</a>
+                                        <a href={CANAL_LINK} target="_blank" className="btn" style={{marginBottom:'10px', borderColor:'var(--blue)'}}>📢 Canal Transporte Universitario</a>
+                                        <button onClick={sendRep} className="btn" style={{color:'var(--red)', borderColor:'var(--red)'}}>🚨 El bus no paró (Vacío)</button>
                                     </div>
-                                    <div className="map-box">📍 Cargando Mapa...</div>
+                                    <div style={{background:'#eee', borderRadius:'15px', height:'300px', display:'flex', alignItems:'center', justifyContent:'center'}}>📍 Mapa en tiempo real</div>
                                 </div>
                             </div>
                         )}
 
-                        {user.role === 'Administrativo' && (
+                        {p === "Administrativo" && (
                             <>
-                                <h2>Panel de Control Administrativo</h2>
-                                <div className="grid-maps" style={{marginBottom:'30px'}}>
-                                    {Object.keys(RUTAS_DATA).map(r => (
-                                        <div key={r} className="card" style={{padding:'10px', margin:0}}>
-                                            <div style={{display:'flex', justifyContent:'space-between', marginBottom:'10px'}}>
-                                                <b>{r}</b>
-                                                <button onClick={()=>copiarTexto(r)} style={{fontSize:'10px', cursor:'pointer'}}>📋 Copiar Info</button>
+                                <h2>Monitor de Rutas</h2>
+                                <div className="grid" style={{gridTemplateColumns:'repeat(2, 1fr)', gap:'15px'}}>
+                                    {Object.keys(RUTAS_DATA).map(name => (
+                                        <div key={name} className="card" style={{margin:0, padding:'15px'}}>
+                                            <div style={{display:'flex', justifyContent:'space-between'}}>
+                                                <b>{name}</b>
+                                                <button onClick={()=>copyInfo(name)} style={{fontSize:'10px', cursor:'pointer'}}>📋 Copiar</button>
                                             </div>
-                                            <div className="map-box" style={{height:'120px'}}>🗺️ Tiempo Real</div>
-                                            <div style={{fontSize:'11px', marginTop:'10px'}}>
-                                                Placa: {RUTAS_DATA[r].placa} | Cond: {RUTAS_DATA[r].cond}
-                                            </div>
+                                            <div style={{height:'100px', background:'#eee', margin:'10px 0', borderRadius:'10px'}}></div>
+                                            <small>Placa: {RUTAS_DATA[name].placa}</small>
                                         </div>
                                     ))}
                                 </div>
-
-                                <div className="card">
-                                    <h3>Historial de Reportes Estudiantiles</h3>
+                                <div className="card" style={{marginTop:'20px'}}>
+                                    <h3>Reportes del Día</h3>
                                     <table>
-                                        <thead>
-                                            <tr>
-                                                <th>Fecha/Hora</th>
-                                                <th>Ruta</th>
-                                                <th>Placa/Conductor</th>
-                                                <th>Motivo</th>
-                                                <th>Acción</th>
-                                            </tr>
-                                        </thead>
+                                        <thead><tr><th>Hora</th><th>Ruta</th><th>Placa</th><th>Motivo</th></tr></thead>
                                         <tbody>
-                                            {reportes.length === 0 ? <tr><td colSpan="5">No hay reportes hoy</td></tr> : 
-                                                reportes.map(rep => (
-                                                <tr key={rep.id}>
-                                                    <td>{rep.fecha} - {rep.hora}</td>
-                                                    <td>{rep.ruta}</td>
-                                                    <td>{rep.placa} ({rep.conductor})</td>
-                                                    <td><span className="status st-red">{rep.motivo}</span></td>
-                                                    <td><button className="status st-green" style={{border:'none', cursor:'pointer'}}>Atender</button></td>
-                                                </tr>
-                                            ))}
+                                            {reps.length===0 ? <tr><td colSpan="4">Sin reportes</td></tr> : 
+                                            reps.map(x => <tr key={x.id}><td>{x.h}</td><td>{x.r}</td><td>{x.p}</td><td><span className="status st-red">No paró</span></td></tr>)}
                                         </tbody>
                                     </table>
                                 </div>
-
-                                <div className="card">
-                                    <h3>Gestión de Co-Administradores</h3>
-                                    <div style={{display:'flex', gap:'10px', marginBottom:'15px'}}>
-                                        <input id="newCo" placeholder="Nombre Co-Admin" className="btn" style={{width:'200px'}} />
-                                        <button onClick={()=>{
-                                            const name = document.getElementById('newCo').value;
-                                            if(name) setCoAdmins([...coAdmins, {id: Date.now(), name, role: 'Lector'}]);
-                                        }} className="btn btn-p" style={{width:'150px'}}>Agregar Lector</button>
-                                    </div>
-                                    {coAdmins.map(co => (
-                                        <div key={co.id} style={{padding:'10px', borderBottom:'1px solid #eee', display:'flex', justifyContent:'space-between'}}>
-                                            <span>👤 {co.name}</span>
-                                            <small className="status st-green">Solo Lectura</small>
-                                        </div>
-                                    ))}
-                                </div>
                             </>
-                        )}
-
-                        {user.role === 'Coadmin' && (
-                            <div className="card">
-                                <h2>Vista de Lector (Sin edición)</h2>
-                                <p>Tienes acceso a ver los mapas y reportes, pero las funciones de envío están deshabilitadas.</p>
-                                <div className="grid-maps">
-                                    {Object.keys(RUTAS_DATA).map(r => <div key={r} className="map-box">🗺️ Vista: {r}</div>)}
-                                </div>
-                            </div>
                         )}
                     </main>
                 </div>
