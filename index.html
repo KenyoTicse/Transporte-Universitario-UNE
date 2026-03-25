@@ -3,82 +3,39 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Somos Cantuta - Sistema Integral UNE</title>
+    <title>Somos Cantuta - UNE</title>
     <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap" rel="stylesheet">
-    
     <style>
-        :root {
-            --primary-blue: #3b82f6;
-            --dark-blue: #1e3a8a;
-            --bg-light: #f6f8fb;
-            --text-main: #1e293b;
-            --text-sub: #64748b;
-            --danger: #ef4444;
-            --success: #22c55e;
-            --radius: 24px;
-        }
-
-        * { box-sizing: border-box; font-family: 'Inter', sans-serif; }
-        body, html { margin: 0; padding: 0; background: var(--bg-light); height: 100vh; color: var(--text-main); overflow: hidden; }
-
-        /* ESTRUCTURA PRINCIPAL SEGÚN IMAGEN */
-        .app-wrapper { display: flex; height: 100vh; padding: 25px; gap: 25px; }
+        :root { --primary: #3b82f6; --danger: #ef4444; --bg: #f6f8fb; }
+        body { margin: 0; background: var(--bg); font-family: sans-serif; overflow: hidden; }
+        .app-wrapper { display: flex; height: 100vh; padding: 20px; gap: 20px; box-sizing: border-box; }
         
-        /* SIDEBAR IZQUIERDO */
-        .sidebar { 
-            width: 320px; background: white; border-radius: var(--radius); 
-            padding: 30px; display: flex; flex-direction: column; gap: 12px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.03);
-        }
-        .sidebar-header { margin-bottom: 20px; }
-        .sidebar-label { font-size: 11px; font-weight: 800; color: var(--text-sub); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; display: block; }
-
-        /* BOTONES DE RUTA */
-        .route-btn { 
-            display: flex; align-items: center; justify-content: space-between; padding: 18px; 
-            border: none; border-radius: 18px; background: transparent; color: var(--text-sub); 
-            cursor: pointer; font-weight: 600; transition: 0.3s; border: 1px solid #f1f5f9;
-        }
-        .route-btn.active { background: var(--primary-blue); color: white; border-color: var(--primary-blue); box-shadow: 0 8px 15px rgba(59, 130, 246, 0.2); }
-        .route-btn:hover:not(.active) { background: #f8fafc; }
-
-        /* PANEL CENTRAL */
-        .main-panel { 
-            flex: 1; background: white; border-radius: var(--radius); 
-            padding: 40px; overflow-y: auto; box-shadow: 0 10px 25px rgba(0,0,0,0.03);
-            position: relative;
-        }
-
-        /* TARJETAS DE WHATSAPP (Asegurando clic) */
-        .ws-card { 
+        /* SIDEBAR SEGÚN DISEÑO */
+        .sidebar { width: 300px; background: white; border-radius: 24px; padding: 25px; display: flex; flex-direction: column; gap: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+        .route-btn { width: 100%; padding: 18px; border: 1px solid #f1f5f9; border-radius: 18px; background: white; text-align: left; cursor: pointer; font-weight: bold; color: #64748b; display: flex; justify-content: space-between; }
+        .route-btn.active { background: var(--primary); color: white; border-color: var(--primary); box-shadow: 0 8px 15px rgba(59, 130, 246, 0.2); }
+        
+        /* PANEL PRINCIPAL */
+        .main-panel { flex: 1; background: white; border-radius: 24px; padding: 35px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); position: relative; }
+        
+        /* ENLACES WHATSAPP DIRECTOS */
+        .ws-link { 
             display: flex; align-items: center; gap: 15px; padding: 20px; 
             border-radius: 20px; border: 1px solid #f1f5f9; text-decoration: none; 
-            color: inherit; transition: 0.2s; position: relative; z-index: 10;
+            color: inherit; margin-bottom: 15px; position: relative; 
+            z-index: 999 !important; background: white; cursor: pointer !important;
         }
-        .ws-card:hover { border-color: var(--danger); background: #fffafb; transform: translateY(-2px); }
+        .ws-link:hover { border-color: var(--danger); background: #fffafb; transform: translateY(-2px); }
         .ws-icon { background: #fee2e2; color: #ef4444; width: 45px; height: 45px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 20px; }
-        
-        /* INFO CARDS */
-        .info-box { padding: 20px; border-radius: 20px; display: flex; gap: 15px; margin-top: 15px; border: none; }
-        .blue-box { background: #eff6ff; border-left: 5px solid var(--primary-blue); }
-        .yellow-box { background: #fffbeb; border-left: 5px solid #f59e0b; }
-
-        /* MAPA */
-        .map-section { background: white; border-radius: 20px; border: 1px solid #f1f5f9; overflow: hidden; height: 100%; }
-        .map-header { padding: 15px 20px; border-bottom: 1px solid #f1f5f9; display: flex; justify-content: space-between; font-size: 11px; font-weight: 800; color: var(--text-sub); }
     </style>
 </head>
 <body>
     <div id="root"></div>
-
     <script type="text/babel">
         const { useState } = React;
-
-        const WHATSAPP_CANAL = "https://whatsapp.com/channel/0029VbCR9BS9MF8ypba5gy0o";
-        const RUTAS_INFO = {
+        const RUTAS = {
             "Ruta UNI": "https://chat.whatsapp.com/I2mw9VmXvgnL5Y7Mzuf3tj",
             "Ruta Puente Nuevo": "https://chat.whatsapp.com/IQTb0HJVjhBD0kiWqe56Ks",
             "Ruta Puente Santa Anita": "https://chat.whatsapp.com/DcOWGPkPvpD39PvA2B7iWH?mode=wwt",
@@ -86,119 +43,39 @@
         };
 
         function App() {
-            const [rutaSel, setRutaSel] = useState("Ruta UNI");
-
+            const [sel, setSel] = useState("Ruta UNI");
             return (
                 <div className="app-wrapper">
-                    {/* SIDEBAR BASADO EN IMAGEN image_a59743.jpg */}
                     <aside className="sidebar">
-                        <div className="sidebar-header">
-                            <span className="sidebar-label">DATOS PERSONALES</span>
-                        </div>
-                        
-                        {Object.keys(RUTAS_INFO).map(r => (
-                            <button 
-                                key={r} 
-                                onClick={() => setRutaSel(r)} 
-                                className={`route-btn ${rutaSel === r ? 'active' : ''}`}
-                            >
-                                <div style={{display:'flex', alignItems:'center', gap:'12px'}}>
-                                    <span>🚍</span> {r}
-                                </div>
-                                <span>&rsaquo;</span>
+                        <small style={{fontWeight:800, color:'#94a3b8', marginBottom:'10px'}}>DATOS PERSONALES</small>
+                        {Object.keys(RUTAS).map(r => (
+                            <button key={r} onClick={() => setSel(r)} className={`route-btn ${sel === r ? 'active' : ''}`}>
+                                <span>🚍 {r}</span><span>&rsaquo;</span>
                             </button>
                         ))}
-
-                        <div style={{marginTop:'20px'}}>
-                            <div className="route-btn" style={{color:'#ef4444', marginBottom:'8px'}}>
-                                <div style={{display:'flex', alignItems:'center', gap:'12px'}}><span>🚨</span> Reporte</div>
-                                <span>&rsaquo;</span>
-                            </div>
-                            <div className="route-btn" style={{color:'#ef4444'}}>
-                                <div style={{display:'flex', alignItems:'center', gap:'12px'}}><span>⭕</span> Cerrar sesión</div>
-                                <span>&rsaquo;</span>
-                            </div>
-                        </div>
-
-                        <div style={{marginTop:'auto', padding:'15px', background:'#f8fafc', borderRadius:'15px', display:'flex', alignItems:'center', gap:'10px'}}>
-                            <div style={{color:'#22c55e'}}>●</div>
-                            <div style={{fontSize:'10px'}}><b>Sistema operativo</b><br/><span style={{color:'var(--text-sub)'}}>Todos los servicios activos</span></div>
-                        </div>
                     </aside>
-
-                    {/* CONTENIDO PRINCIPAL image_a59743.jpg */}
                     <main className="main-panel">
-                        <div style={{display:'grid', gridTemplateColumns: '1fr 400px', gap: '40px', height:'100%'}}>
-                            
-                            <section>
-                                <h1 style={{color: '#ef4444', fontSize: '32px', marginBottom: '5px'}}>{rutaSel}</h1>
-                                <div style={{display:'flex', alignItems:'center', gap:'15px', marginBottom:'30px'}}>
-                                    <div style={{display:'flex', alignItems:'center', gap:'8px', fontWeight:600}}>
-                                        <span style={{color:'var(--primary-blue)', fontSize:'20px'}}>🚍</span> Bus llegando en 15 min
-                                    </div>
-                                    <span style={{background:'#dcfce7', color:'#166534', padding:'4px 12px', borderRadius:'10px', fontSize:'11px', fontWeight:800}}>● En camino</span>
-                                </div>
-
-                                <div style={{display:'flex', flexDirection:'column', gap:'15px'}}>
-                                    {/* ENLACES DE WHATSAPP CON TARGET BLANK Y Z-INDEX */}
-                                    <a href={RUTAS_INFO[rutaSel]} target="_blank" rel="noopener noreferrer" className="ws-card">
-                                        <div className="ws-icon">💬</div>
-                                        <div style={{flex:1}}>
-                                            <b style={{color:'#ef4444'}}>WhatsApp Ruta</b><br/>
-                                            <small style={{color:'var(--text-sub)'}}>Grupo de la {rutaSel}</small>
-                                        </div>
-                                        <span style={{color:'var(--primary-blue)'}}>🔗</span>
-                                    </a>
-
-                                    <a href={WHATSAPP_CANAL} target="_blank" rel="noopener noreferrer" className="ws-card">
-                                        <div className="ws-icon">📢</div>
-                                        <div style={{flex:1}}>
-                                            <b style={{color:'#ef4444'}}>WhatsApp Canal</b><br/>
-                                            <small style={{color:'var(--text-sub)'}}>Canal oficial de anuncios</small>
-                                        </div>
-                                        <span style={{color:'var(--primary-blue)'}}>🔗</span>
-                                    </a>
-
-                                    <div className="info-box blue-box">
-                                        <div style={{background:'var(--primary-blue)', color:'white', width:'30px', height:'30px', borderRadius:'50%', display:'flex', alignItems:'center', justifyCenter:'center', fontSize:'14px', flexShrink:0, justifyContent:'center'}}>i</div>
-                                        <div>
-                                            <b>Información de servicio</b><br/>
-                                            <small style={{color:'var(--text-sub)'}}>Próximo bus llegando a la parada principal. Actualizado hace 2 min.</small>
-                                        </div>
-                                    </div>
-
-                                    <div className="info-box yellow-box">
-                                        <div style={{fontSize:'20px'}}>💡</div>
-                                        <div>
-                                            <b>Consejo</b><br/>
-                                            <small style={{color:'var(--text-sub)'}}>Ten lista tu tarjeta para un abordaje más rápido.</small>
-                                        </div>
-                                    </div>
-                                </div>
-                            </section>
-
-                            <aside>
-                                <div className="map-section">
-                                    <div className="map-header">
-                                        <span>MAPA EN TIEMPO REAL</span>
-                                        <span style={{color:'var(--success)'}}>● Conectado</span>
-                                    </div>
-                                    <div style={{height:'100%', position:'relative'}}>
-                                        <img src="https://maps.googleapis.com/maps/api/staticmap?center=-12.04,-77.02&zoom=14&size=400x600&key=YOUR_API_KEY" style={{width:'100%', height:'100%', objectFit:'cover'}} />
-                                        {/* BUS ICON OVERLAY */}
-                                        <div style={{position:'absolute', top:'40%', left:'60%', background:'var(--primary-blue)', color:'white', padding:'8px', borderRadius:'50%', border:'4px solid rgba(59, 130, 246, 0.3)'}}>🚍</div>
-                                    </div>
-                                </div>
-                            </aside>
-
+                        <h1 style={{color: '#ef4444', fontSize: '32px', marginTop:0}}>{sel}</h1>
+                        <div style={{display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '30px'}}>
+                            <div>
+                                <a href={RUTAS[sel]} target="_blank" rel="noopener noreferrer" className="ws-link">
+                                    <div className="ws-icon">💬</div>
+                                    <div><b style={{color:'#ef4444'}}>WhatsApp Ruta</b><br/><small>Grupo de la {sel}</small></div>
+                                </a>
+                                <a href="https://whatsapp.com/channel/0029VbCR9BS9MF8ypba5gy0o" target="_blank" rel="noopener noreferrer" className="ws-link">
+                                    <div className="ws-icon">📢</div>
+                                    <div><b style={{color:'#ef4444'}}>WhatsApp Canal</b><br/><small>Canal oficial UNE</small></div>
+                                </a>
+                            </div>
+                            <div style={{border:'1px solid #f1f5f9', borderRadius:'24px', overflow:'hidden', height:'400px'}}>
+                                <img src="https://maps.googleapis.com/maps/api/staticmap?center=-12.04,-77.02&zoom=14&size=400x400&key=API" style={{width:'100%', height:'100%', objectFit:'cover'}} />
+                            </div>
                         </div>
                     </main>
                 </div>
             );
         }
-
-        const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<App />);
+        ReactDOM.createRoot(document.getElementById('root')).render(<App />);
     </script>
 </body>
 </html>
