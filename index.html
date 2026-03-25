@@ -7,7 +7,7 @@
     <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <script src="https://unpkg.com/lucide@latest"></script>
+    
     <style>
         :root {
             --primary-blue: #3b82f6;
@@ -29,19 +29,20 @@
         .login-white { flex: 1; background: white; display: flex; justify-content: center; align-items: center; }
         .login-form { width: 340px; display: flex; flex-direction: column; gap: 15px; }
         .input-field { padding: 14px; border: 1px solid #e2e8f0; border-radius: 12px; outline: none; font-size: 15px; }
-        .btn-main { padding: 14px; background: var(--primary-blue); color: white; border: none; border-radius: 12px; cursor: pointer; font-weight: 600; }
+        .btn-main { padding: 14px; background: var(--primary-blue); color: white; border: none; border-radius: 12px; cursor: pointer; font-weight: 600; transition: 0.3s; }
+        .btn-main:hover { background: var(--dark-blue); }
 
         /* APP LAYOUT */
         .app-wrapper { display: flex; height: 100vh; overflow: hidden; }
         
-        /* SIDEBAR MODERN */
+        /* SIDEBAR */
         .sidebar { width: 320px; background: white; border-right: 1px solid #e2e8f0; padding: 30px; display: flex; flex-direction: column; gap: 20px; }
-        .sidebar-label { font-size: 12px; font-weight: 700; color: var(--text-sub); text-transform: uppercase; letter-spacing: 0.05em; }
+        .sidebar-label { font-size: 11px; font-weight: 800; color: var(--text-sub); text-transform: uppercase; letter-spacing: 0.1em; }
         
         .route-btn { 
             display: flex; align-items: center; gap: 12px; padding: 16px; 
             border: none; border-radius: var(--radius); background: transparent;
-            color: var(--text-sub); cursor: pointer; transition: 0.2s; font-weight: 500;
+            color: var(--text-sub); cursor: pointer; transition: 0.2s; font-weight: 600;
         }
         .route-btn.active { background: var(--primary-blue); color: white; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3); }
         .route-btn:hover:not(.active) { background: #f1f5f9; }
@@ -55,35 +56,36 @@
         /* MAIN CONTENT */
         .main-panel { flex: 1; padding: 40px; overflow-y: auto; }
         .header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
-        .title-red { font-size: 28px; color: var(--danger); font-weight: 800; margin: 0; }
+        .title-red { font-size: 26px; color: var(--danger); font-weight: 900; margin: 0; }
         
-        .pill { display: flex; align-items: center; gap: 8px; padding: 8px 16px; border-radius: 20px; font-size: 13px; font-weight: 600; }
+        .pill { display: flex; align-items: center; gap: 8px; padding: 8px 16px; border-radius: 20px; font-size: 12px; font-weight: 700; }
         .pill-blue { background: #dbeafe; color: #1e40af; }
         .pill-green { background: #dcfce7; color: #166534; }
 
-        .content-grid { display: grid; grid-template-columns: 1fr 1.2fr; gap: 30px; }
+        .content-grid { display: grid; grid-template-columns: 1fr 1.2fr; gap: 25px; }
+        .grid-4 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
         
         /* CARDS */
         .info-card { 
-            background: white; padding: 20px; border-radius: var(--radius); 
-            border: 1px solid #e2e8f0; margin-bottom: 15px; display: flex; align-items: center; gap: 15px;
+            background: white; padding: 18px; border-radius: var(--radius); 
+            border: 1px solid #e2e8f0; margin-bottom: 12px; display: flex; align-items: center; gap: 15px;
         }
-        .card-icon { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; }
+        .card-icon { width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; }
 
         /* MAP BOX */
         .map-container { 
             background: white; border-radius: var(--radius); border: 1px solid #e2e8f0; 
-            overflow: hidden; display: flex; flex-direction: column; height: 500px;
+            overflow: hidden; display: flex; flex-direction: column; min-height: 300px;
         }
-        .map-header { padding: 15px 20px; border-bottom: 1px solid #f1f5f9; display: flex; justify-content: space-between; font-size: 12px; font-weight: 700; color: var(--text-sub); }
-        .map-body { flex: 1; background: #cbd5e1; position: relative; display: flex; align-items: center; justify-content: center; overflow: hidden;}
+        .map-header { padding: 12px 20px; border-bottom: 1px solid #f1f5f9; display: flex; justify-content: space-between; font-size: 11px; font-weight: 800; color: var(--text-sub); }
+        .map-body { flex: 1; background: #cbd5e1; position: relative; overflow: hidden; }
     </style>
 </head>
 <body>
     <div id="root"></div>
 
     <script type="text/babel">
-        const { useState, useEffect } = React;
+        const { useState } = React;
 
         const db = {
             "20223691": { pass: "2022", tipo: "Estudiante", nombre: "KENYO TICSE" },
@@ -101,15 +103,13 @@
                 const u = e.target.user.value;
                 const p = e.target.pass.value;
                 const t = e.target.tipo.value;
-
                 if (db[u] && db[u].pass === p && db[u].tipo === t) {
                     setUser(db[u]);
                     setPantalla(t);
-                } else {
-                    alert("Datos incorrectos");
-                }
+                } else { alert("Datos incorrectos"); }
             };
 
+            // --- VISTA LOGIN ---
             if (pantalla === "login") {
                 return (
                     <div className="login-container">
@@ -120,7 +120,7 @@
                         <div className="login-white">
                             <form onSubmit={handleLogin} className="login-form">
                                 <img src="https://upload.wikimedia.org/wikipedia/commons/e/ea/Logo_UNE.png" width="80" style={{margin: "0 auto 10px"}}/>
-                                <h2 style={{marginBottom: 10}}>Bienvenido</h2>
+                                <h2>Bienvenido</h2>
                                 <select name="tipo" className="input-field" required>
                                     <option value="">Selecciona tu Rol</option>
                                     <option value="Estudiante">Estudiante</option>
@@ -136,110 +136,113 @@
                 );
             }
 
-            // PANEL GENERAL (Basado en la imagen enviada)
+            // --- VISTA ADMINISTRATIVO (4 MAPAS) ---
+            if (pantalla === "Administrativo") {
+                return (
+                    <div className="app-wrapper">
+                        <aside className="sidebar">
+                            <div className="sidebar-label">Administración</div>
+                            <button className="route-btn active"><span>📊</span> Ver Reportes</button>
+                            <div className="sidebar-label" style={{marginTop:'15px'}}>Nuevo Admin</div>
+                            <input className="input-field" placeholder="Usuario" style={{fontSize:'13px'}} />
+                            <input className="input-field" type="password" placeholder="Pass" style={{fontSize:'13px'}} />
+                            
+                            <div className="sidebar-label" style={{marginTop:'15px'}}>Coadministradores</div>
+                            <div className="action-card" style={{justifyContent:'space-between'}}>
+                                <span style={{fontSize:'13px', fontWeight:600}}>Ruta UNI</span>
+                                <span style={{background:'var(--success)', color:'white', padding:'2px 6px', borderRadius:'6px', fontSize:'9px'}}>HAB</span>
+                            </div>
+                            <div className="action-card" style={{justifyContent:'space-between'}}>
+                                <span style={{fontSize:'13px', fontWeight:600}}>Ruta Bolognesi</span>
+                                <span style={{background:'var(--danger)', color:'white', padding:'2px 6px', borderRadius:'6px', fontSize:'9px'}}>DEN</span>
+                            </div>
+
+                            <div style={{marginTop:'auto'}} className="action-card" onClick={() => window.location.reload()}>
+                                <span>🔴</span> Cerrar Sesión
+                            </div>
+                        </aside>
+                        <main className="main-panel">
+                            <div className="header-row"><h1 className="title-red">ADMINISTRATIVO GLOBAL</h1></div>
+                            <div className="grid-4">
+                                {["Ruta Bolognesi", "Ruta Santa Anita", "Ruta UNI", "Ruta Puente Nuevo"].map(m => (
+                                    <div key={m} className="map-container">
+                                        <div className="map-header"><span>{m.toUpperCase()}</span></div>
+                                        <div className="map-body"><img src="https://maps.googleapis.com/maps/api/staticmap?center=-12.04,-77.02&zoom=13&size=400x300&key=API" style={{width:'100%', height:'100%', objectFit:'cover'}} /></div>
+                                    </div>
+                                ))}
+                            </div>
+                        </main>
+                    </div>
+                );
+            }
+
+            // --- VISTA CONDUCTOR ---
+            if (pantalla === "Conductor") {
+                return (
+                    <div className="app-wrapper">
+                        <aside className="sidebar">
+                            <div className="sidebar-label">Panel Conductor</div>
+                            <div className="action-card"><span>👤</span> Placa: ABC-123</div>
+                            {["Ruta UNI", "Ruta Bolognesi", "Ruta Santa Anita", "Ruta Puente Nuevo"].map(r => (
+                                <button key={r} onClick={() => setRutaSel(r)} className={`route-btn ${rutaSel === r ? 'active' : ''}`}><span>🚍</span> {r}</button>
+                            ))}
+                            <div style={{marginTop:'auto'}} className="action-card" onClick={() => window.location.reload()}><span>🔴</span> Salir</div>
+                        </aside>
+                        <main className="main-panel">
+                            <h1 className="title-red">{rutaSel}</h1>
+                            <div className="content-grid" style={{marginTop:'20px'}}>
+                                <div className="map-container" style={{gridColumn:'span 2', height:'380px'}}>
+                                    <div className="map-header"><span>ESTADO EN VIVO</span> <span style={{color:'var(--success)'}}>● Transmitiendo</span></div>
+                                    <div className="map-body"><img src="https://maps.googleapis.com/maps/api/staticmap?center=-12.04,-77.02&zoom=15&size=800x400&key=API" style={{width:'100%', height:'100%', objectFit:'cover'}} /></div>
+                                </div>
+                                <div className="info-card" style={{borderLeft:'5px solid var(--success)'}}>
+                                    <div className="card-icon" style={{background:'#dcfce7'}}>🔔</div>
+                                    <div><div style={{fontWeight:700}}>Notificación</div><div style={{fontSize:'12px', color:'var(--success)'}}>Ruta libre - 5 esterihuatca</div></div>
+                                </div>
+                                <div className="info-card" style={{borderLeft:'5px solid var(--danger)'}}>
+                                    <div className="card-icon" style={{background:'#fee2e2'}}>⚠️</div>
+                                    <div><div style={{fontWeight:700}}>Bus Lleno</div><div style={{fontSize:'12px', color:'var(--danger)'}}>Reportar capacidad máxima</div></div>
+                                </div>
+                                <button className="btn-main" style={{gridColumn:'span 2', fontSize:'16px'}}>COMPARTIR MI UBICACIÓN 📡</button>
+                            </div>
+                        </main>
+                    </div>
+                );
+            }
+
+            // --- VISTA ESTUDIANTE ---
             return (
                 <div className="app-wrapper">
-                    {/* SIDEBAR COMPLETO */}
                     <aside className="sidebar">
-                        <div className="sidebar-label">Datos Personales</div>
-                        <div style={{display:'flex', flexDirection:'column', gap:'8px'}}>
-                            {["Ruta UNI", "Ruta Puente Nuevo", "Ruta Puente Santa Anita", "Ruta Bolognesi"].map(r => (
-                                <button 
-                                    key={r} 
-                                    className={`route-btn ${rutaSel === r ? 'active' : ''}`}
-                                    onClick={() => setRutaSel(r)}
-                                >
-                                    <span>🚍</span> {r}
-                                </button>
-                            ))}
-                        </div>
-
-                        <div style={{marginTop:'auto', display:'flex', flexDirection:'column', gap:'10px'}}>
-                            <div className="action-card">
-                                <span style={{fontSize:'20px'}}>🚨</span>
-                                <div>
-                                    <div style={{fontSize:'14px', fontWeight:600}}>Reporte</div>
-                                    <div style={{fontSize:'11px', color:'var(--text-sub)'}}>Incidencias y novedades</div>
-                                </div>
-                            </div>
-                            <div className="action-card" onClick={() => window.location.reload()}>
-                                <span style={{fontSize:'20px'}}>🔴</span>
-                                <div>
-                                    <div style={{fontSize:'14px', fontWeight:600}}>Cerrar sesión</div>
-                                    <div style={{fontSize:'11px', color:'var(--text-sub)'}}>Salir de la aplicación</div>
-                                </div>
-                            </div>
-                            
-                            <div style={{background:'#f8fafc', padding:'12px', borderRadius:'12px', display:'flex', alignItems:'center', gap:'10px'}}>
-                                <div style={{width:8, height:8, background:'var(--success)', borderRadius:'50%'}}></div>
-                                <div>
-                                    <div style={{fontSize:'11px', fontWeight:700}}>Sistema operativo</div>
-                                    <div style={{fontSize:'9px', color:'var(--text-sub)'}}>Servicios activos</div>
-                                </div>
-                            </div>
+                        <div className="sidebar-label">Rutas Disponibles</div>
+                        {["Ruta UNI", "Ruta Puente Nuevo", "Ruta Puente Santa Anita", "Ruta Bolognesi"].map(r => (
+                            <button key={r} className={`route-btn ${rutaSel === r ? 'active' : ''}`} onClick={() => setRutaSel(r)}>
+                                <span>🚍</span> {r}
+                            </button>
+                        ))}
+                        <div style={{marginTop:'auto'}}>
+                            <div className="action-card"><span>🚨</span> Reportar Incidencia</div>
+                            <div className="action-card" onClick={() => window.location.reload()}><span>🔴</span> Cerrar Sesión</div>
                         </div>
                     </aside>
-
-                    {/* CONTENIDO PRINCIPAL DINÁMICO */}
                     <main className="main-panel">
                         <div className="header-row">
                             <h1 className="title-red">{rutaSel.toUpperCase()}</h1>
                             <div style={{display:'flex', gap:'10px'}}>
-                                <div className="pill pill-blue"><span>🚌</span> Bus llegando en 15 min</div>
-                                <div className="pill pill-green"><div style={{width:6, height:6, background:'currentColor', borderRadius:'50%'}}></div> En camino</div>
+                                <div className="pill pill-blue"><span>🚌</span> 15 min</div>
+                                <div className="pill pill-green">En camino</div>
                             </div>
                         </div>
-
                         <div className="content-grid">
                             <section>
-                                <div className="info-card">
-                                    <div className="card-icon" style={{background:'#fee2e2'}}>💬</div>
-                                    <div>
-                                        <div style={{fontWeight:700, fontSize:'15px', color:'#dc2626'}}>WhatsApp Ruta</div>
-                                        <div style={{fontSize:'12px', color:'var(--text-sub)'}}>Grupo de la {rutaSel}</div>
-                                    </div>
-                                </div>
-                                <div className="info-card">
-                                    <div className="card-icon" style={{background:'#fee2e2'}}>📢</div>
-                                    <div>
-                                        <div style={{fontWeight:700, fontSize:'15px', color:'#dc2626'}}>WhatsApp Canal</div>
-                                        <div style={{fontSize:'12px', color:'var(--text-sub)'}}>Canal oficial de anuncios</div>
-                                    </div>
-                                </div>
-                                <div className="info-card" style={{background:'#eff6ff', borderColor:'#bfdbfe'}}>
-                                    <div className="card-icon" style={{background:'#3b82f6', color:'white'}}>ℹ️</div>
-                                    <div>
-                                        <div style={{fontWeight:700, fontSize:'15px', color:'#1e40af'}}>Información de servicio</div>
-                                        <div style={{fontSize:'12px', color:'#1e40af', opacity:0.8}}>Próximo bus llegando a la parada principal</div>
-                                        <div style={{fontSize:'10px', marginTop:4, opacity:0.6}}>Actualizado hace 2 minutos</div>
-                                    </div>
-                                </div>
-                                <div className="info-card" style={{background:'#fffbeb', borderColor:'#fef3c7'}}>
-                                    <div className="card-icon" style={{background:'#f59e0b', color:'white'}}>💡</div>
-                                    <div>
-                                        <div style={{fontWeight:700, fontSize:'15px', color:'#92400e'}}>Consejo</div>
-                                        <div style={{fontSize:'12px', color:'#92400e'}}>Ten lista tu tarjeta para un abordaje más rápido</div>
-                                    </div>
-                                </div>
+                                <div className="info-card"><div className="card-icon" style={{background:'#fee2e2'}}>💬</div><div><b>WhatsApp Ruta</b><br/><small>Únete al grupo de apoyo</small></div></div>
+                                <div className="info-card"><div className="card-icon" style={{background:'#fee2e2'}}>📢</div><div><b>Canal Oficial</b><br/><small>Anuncios de la universidad</small></div></div>
+                                <div className="info-card" style={{background:'#eff6ff'}}><div className="card-icon" style={{background:'#3b82f6', color:'white'}}>ℹ️</div><div><b>Info Servicio</b><br/><small>Horarios y paraderos</small></div></div>
                             </section>
-
                             <section>
-                                <div className="map-container">
-                                    <div className="map-header">
-                                        <span>MAPA EN TIEMPO REAL</span>
-                                        <span style={{color:'var(--success)'}}>● Conectado</span>
-                                    </div>
-                                    <div className="map-body">
-                                        {/* Simulación de Mapa con Imagen Estática para el diseño */}
-                                        <img 
-                                            src={`https://maps.googleapis.com/maps/api/staticmap?center=-12.043,-77.028&zoom=14&size=600x500&key=TU_API_KEY`} 
-                                            style={{width:'100%', height:'100%', objectFit:'cover'}}
-                                            alt="Mapa"
-                                        />
-                                        <div style={{position:'absolute', color:'white', background:'rgba(0,0,0,0.5)', padding:'10px', borderRadius:'8px', fontWeight:700}}>
-                                            VISTA DE MAPA ACTIVA
-                                        </div>
-                                    </div>
+                                <div className="map-container" style={{height:'480px'}}>
+                                    <div className="map-header"><span>TIEMPO REAL</span><span style={{color:'var(--success)'}}>● Conectado</span></div>
+                                    <div className="map-body"><img src="https://maps.googleapis.com/maps/api/staticmap?center=-12.04,-77.02&zoom=14&size=600x500&key=API" style={{width:'100%', height:'100%', objectFit:'cover'}} /></div>
                                 </div>
                             </section>
                         </div>
