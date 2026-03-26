@@ -8,10 +8,10 @@
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
     <style>
         :root { --blue: #3b82f6; --dark: #1e3a8a; --red: #ef4444; --green: #22c55e; --bg: #f8fafc; }
         body { margin: 0; font-family: 'Segoe UI', sans-serif; background: var(--bg); color: #1e293b; overflow: hidden; }
@@ -23,9 +23,7 @@
         .btn:hover { background: #f8fafc; border-color: var(--blue); }
         .btn-p { background: var(--blue); color: #fff; border: none; justify-content: center; font-size: 15px; }
         .btn.active { background: var(--blue); color: #fff; border-color: var(--blue); }
-        .grid-maps { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; }
-        /* Ajuste para que el mapa se vea bien */
-        .map-box { background: #eee; height: 300px; border-radius: 12px; position: relative; z-index: 1; }
+        .map-box { background: #eee; height: 300px; border-radius: 12px; position: relative; z-index: 1; border: 1px solid #ddd; }
         .status { font-size: 10px; font-weight: 800; padding: 4px 8px; border-radius: 6px; text-transform: uppercase; }
         .st-red { background: #fee2e2; color: #b91c1c; }
         .st-green { background: #dcfce7; color: #166534; }
@@ -40,10 +38,12 @@
     <script type="text/babel">
         const { useState, useEffect, useRef } = React;
 
-        // 2. CONECTAMOS CON TU PROYECTO (Usa tus llaves aquí)
+        // --- CONFIGURACIÓN (REEMPLAZA SOLO LA KEY) ---
         const SUPABASE_URL = 'https://vmltednkykuktcmfpjxw.supabase.co'; 
-        const SUPABASE_KEY = 'sb_publishable_-gVRGknGDhCHsZKmAjvnTA_kGW0Hdy0'; // Pega la clave de tu imagen
-        const supabase = nominations.createClient(SUPABASE_URL, SUPABASE_KEY);
+        const SUPABASE_KEY = 'sb_publishable_-gVRGknGDhCHsZKmAjvnTA_kGW0Hdy0'; // Usa la 'Clave publicable' de tu imagen
+        
+        // CORRECCIÓN: Usamos 'supabase.createClient' correctamente
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         const USUARIOS_DB = {
             "Admin": { pass: "Admin1", role: "Administrativo", name: "Administrador Cantuta" },
@@ -58,26 +58,25 @@
             const [rutaSel, setRutaSel] = useState("Ruta UNI");
             const [reportes, setReportes] = useState([]);
             const mapRef = useRef(null);
-            const markersRef = useRef({});
 
-            // Cargar reportes desde Supabase en tiempo real
+            // Cargar reportes en tiempo real
             useEffect(() => {
                 if (user?.role === 'Administrativo') {
                     const fetchInicial = async () => {
-                        const { data } = await supabase.from('reportes').select('*').order('id', { ascending: false });
+                        const { data } = await supabaseClient.from('reportes').select('*').order('id', { ascending: false });
                         if (data) setReportes(data);
                     };
                     fetchInicial();
 
-                    const canal = supabase.channel('cambios')
+                    const canal = supabaseClient.channel('cambios')
                         .on('postgres_changes', { event: 'INSERT', table: 'reportes' }, payload => {
                             setReportes(prev => [payload.new, ...prev]);
                         }).subscribe();
-                    return () => supabase.removeChannel(canal);
+                    return () => supabaseClient.removeChannel(canal);
                 }
             }, [user]);
 
-            // Lógica de Mapas
+            // Inicializar Mapa
             useEffect(() => {
                 if (user && document.getElementById('mapa-une')) {
                     if (!mapRef.current) {
@@ -90,22 +89,23 @@
             const handleLogin = (e) => {
                 e.preventDefault();
                 const id = e.target.id.value;
+                const pass = e.target.pass.value;
                 const dbUser = USUARIOS_DB[id];
-                if (dbUser && (dbUser.role === "Conductor" || dbUser.pass === e.target.pass.value)) {
+                if (dbUser && (dbUser.role === "Conductor" || dbUser.pass === pass)) {
                     setUser({ ...dbUser, id });
                 } else { alert("Error de acceso"); }
             };
 
-            // 3. ESTA FUNCIÓN AHORA ENVÍA A LA NUBE
             const addReporte = async (motivo) => {
-                const { error } = await supabase.from('reportes').insert([{ 
+                if (!motivo) return;
+                const { error } = await supabaseClient.from('reportes').insert([{ 
                     ruta: rutaSel, 
                     estudiante: user.name, 
                     motivo, 
                     hora: new Date().toLocaleTimeString() 
                 }]);
-                if (error) alert("Error al conectar");
-                else alert("¡Reporte enviado a la nube!");
+                if (error) alert("Error al conectar con la base de datos");
+                else alert("¡Reporte enviado!");
             };
 
             if (!user) return (
@@ -137,12 +137,12 @@
                     </div>
 
                     <main className="main">
-                        {user.role === 'Administrativo' && (
+                        {user.role === 'Administrativo' ? (
                             <>
                                 <h2>Panel Administrativo UNE</h2>
                                 <div id="mapa-une" className="map-box" style={{marginBottom:'20px'}}></div>
                                 <div className="card">
-                                    <h3>🚩 Incidencias en Tiempo Real</h3>
+                                    <h3>🚩 Incidencias Reportadas</h3>
                                     <table>
                                         <thead><tr><th>Ruta</th><th>Estudiante</th><th>Motivo</th><th>Hora</th></tr></thead>
                                         <tbody>
@@ -151,16 +151,14 @@
                                     </table>
                                 </div>
                             </>
-                        )}
-
-                        {user.role === 'Estudiante' && (
+                        ) : (
                             <div className="card">
                                 <h1>{rutaSel}</h1>
                                 <div id="mapa-une" className="map-box" style={{marginBottom:'15px'}}></div>
                                 <p>Reportar Incidencia:</p>
                                 <button onClick={()=>addReporte("El bus no paró")} className="btn" style={{color:'var(--red)', marginBottom:'10px'}}>🚨 El bus no paró</button>
-                                <div style={{display:'flex', gap:'5px', marginBottom:'20px'}}>
-                                    <input id="txt" placeholder="Agregar detalles..." className="input-text" />
+                                <div style={{display:'flex', gap:'5px'}}>
+                                    <input id="txt" placeholder="Detalles adicionales..." className="input-text" />
                                     <button onClick={()=>{addReporte(document.getElementById('txt').value); document.getElementById('txt').value=''}} className="btn btn-p" style={{width:'80px'}}>Enviar</button>
                                 </div>
                             </div>
@@ -169,7 +167,8 @@
                 </div>
             );
         }
-        ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
     </script>
 </body>
 </html>
