@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bus Cantuteño - UNE</title>
+    <title>Cantured UNE - Bus Cantuteño</title>
     
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -40,9 +40,9 @@
     <script type="text/babel">
         const { useState, useEffect, useRef } = React;
 
-        // --- CONFIGURACIÓN SUPABASE ---
+        // --- CONFIGURACIÓN SUPABASE (Tus claves reales) ---
         const SUPABASE_URL = 'https://vmltednkykuktcmfpjxw.supabase.co'; 
-        const SUPABASE_KEY = 'PEGA_AQUÍ_TU_CLAVE_PUBLISHABLE'; // Reemplaza esto
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZtbHRlZG5reWt1a3RjbWZwanh3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ0ODUwNTEsImV4cCI6MjA5MDA2MTA1MX0.kKS03A0zburhy3_7SkY-cYs8yyzXjwPihX-2Xqy8jqg'; 
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         const USUARIOS_DB = {
@@ -57,19 +57,19 @@
             const [user, setUser] = useState(null);
             const [rutaSel, setRutaSel] = useState("Ruta UNI");
             const [reportes, setReportes] = useState([]);
-            const mapsRef = useRef({}); // Guardamos las instancias de los mapas aquí
+            const mapsRef = useRef({});
 
-            // EFECTO PRINCIPAL: Carga inicial y Tiempo Real
             useEffect(() => {
                 if (!user) return;
 
+                // Cargar reportes iniciales
                 const cargarDatos = async () => {
                     const { data } = await supabaseClient.from('reportes').select('*').order('id', { ascending: false });
                     if (data) setReportes(data);
                 };
                 cargarDatos();
 
-                // Inicializar mapas después de que el DOM cargue
+                // Inicializar Mapas según el Rol
                 setTimeout(() => {
                     if (user.role === 'Administrativo') {
                         RUTAS_LIST.forEach(ruta => {
@@ -86,21 +86,28 @@
                             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(m);
                             mapsRef.current['est'] = { map: m, marker: L.marker([-11.947, -76.700]).addTo(m) };
                         }
+                    } else if (user.role === 'Conductor') {
+                        if (document.getElementById('map-cond') && !mapsRef.current['cond']) {
+                            const m = L.map('map-cond').setView([-11.947, -76.700], 14);
+                            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(m);
+                            mapsRef.current['cond'] = { map: m, marker: L.marker([-11.947, -76.700]).addTo(m) };
+                        }
                     }
                 }, 500);
 
-                // Suscribirse a cambios en tiempo real
+                // Suscripción Realtime
                 const canal = supabaseClient.channel('db-changes')
                     .on('postgres_changes', { event: 'INSERT', table: 'reportes' }, p => setReportes(prev => [p.new, ...prev]))
                     .on('postgres_changes', { event: '*', table: 'ubicaciones_buses' }, p => {
                         const { ruta, latitud, longitud } = p.new;
-                        // Mover marcador en Admin
+                        // Actualizar Admin
                         if (user.role === 'Administrativo' && mapsRef.current[ruta]) {
                             mapsRef.current[ruta].marker.setLatLng([latitud, longitud]);
                         }
-                        // Mover marcador en Estudiante si es su ruta
+                        // Actualizar Estudiante
                         if (user.role === 'Estudiante' && ruta === rutaSel && mapsRef.current['est']) {
                             mapsRef.current['est'].marker.setLatLng([latitud, longitud]);
+                            mapsRef.current['est'].map.panTo([latitud, longitud]);
                         }
                     }).subscribe();
 
@@ -119,18 +126,32 @@
                 const r = document.getElementById('sel-ruta').value;
                 if (navigator.geolocation) {
                     navigator.geolocation.watchPosition(async (pos) => {
+                        const { latitude, longitude } = pos.coords;
+                        
+                        // Actualizar mapa propio del conductor
+                        if (mapsRef.current['cond']) {
+                            mapsRef.current['cond'].marker.setLatLng([latitude, longitude]);
+                            mapsRef.current['cond'].map.setView([latitude, longitude]);
+                        }
+
+                        // Enviar a Supabase
                         await supabaseClient.from('ubicaciones_buses').upsert({
-                            id: user.id, ruta: r, latitud: pos.coords.latitude, longitud: pos.coords.longitude
+                            id: user.id, 
+                            ruta: r, 
+                            latitud: latitude, 
+                            longitud: longitude,
+                            ultima_actualizacion: new Date().toISOString()
                         });
-                    }, null, { enableHighAccuracy: true });
-                    alert("Transmitiendo ubicación de " + r);
+                    }, (err) => alert("Error GPS: " + err.message), { enableHighAccuracy: true });
+                    alert("📡 GPS Iniciado para: " + r);
                 }
             };
 
             if (!user) return (
                 <div className="flex">
                     <div className="login-screen" style={{background: 'var(--dark)', color: '#fff'}}>
-                        <h1 style={{fontSize: '3rem'}}>Bus Cantuta</h1>
+                        <h1 style={{fontSize: '3rem'}}>Cantured UNE</h1>
+                        <p>Bus Cantuteño en Tiempo Real</p>
                     </div>
                     <div className="login-screen">
                         <form onSubmit={handleLogin} style={{width: '280px', display:'flex', flexDirection:'column', gap:'10px'}}>
@@ -152,13 +173,13 @@
                         {user.role === 'Estudiante' && RUTAS_LIST.map(r => (
                             <button key={r} onClick={()=>setRutaSel(r)} className={`btn ${rutaSel===r?'active':''}`}>🚍 {r}</button>
                         ))}
-                        <button onClick={()=>location.reload()} className="btn" style={{marginTop:'auto', color:'var(--red)'}}>Salir</button>
+                        <button onClick={()=>location.reload()} className="btn" style={{marginTop:'auto', color:'var(--red)'}}>Cerrar Sesión</button>
                     </div>
 
                     <main className="main">
                         {user.role === 'Administrativo' && (
                             <>
-                                <h2>Monitor de Rutas en Tiempo Real</h2>
+                                <h2>Monitor Administrativo - Cantured</h2>
                                 <div className="grid-maps">
                                     {RUTAS_LIST.map(r => (
                                         <div key={r} className="card" style={{margin:0}}>
@@ -167,38 +188,29 @@
                                         </div>
                                     ))}
                                 </div>
-                                <div className="card" style={{marginTop:'20px'}}>
-                                    <h3>Reportes Recientes</h3>
-                                    <table>
-                                        <thead><tr><th>Ruta</th><th>Motivo</th><th>Hora</th></tr></thead>
-                                        <tbody>
-                                            {reportes.map(rep => <tr key={rep.id}><td>{rep.ruta}</td><td>{rep.motivo}</td><td>{rep.hora}</td></tr>)}
-                                        </tbody>
-                                    </table>
-                                </div>
                             </>
                         )}
 
                         {user.role === 'Conductor' && (
                             <div className="card">
-                                <h2>Panel de Conducción</h2>
-                                <p>Selecciona tu ruta actual:</p>
-                                <select id="sel-ruta" className="input-text" style={{marginBottom:'10px'}}>
+                                <h2>Panel de Conductor</h2>
+                                <p>Selecciona tu ruta y activa el GPS:</p>
+                                <select id="sel-ruta" className="input-text" style={{marginBottom:'15px'}}>
                                     {RUTAS_LIST.map(r => <option key={r} value={r}>{r}</option>)}
                                 </select>
-                                <button onClick={iniciarGPS} className="btn btn-p" style={{background:'var(--green)'}}>📡 INICIAR GPS</button>
+                                <button onClick={iniciarGPS} className="btn btn-p" style={{background:'var(--green)', marginBottom:'20px'}}>📡 INICIAR GPS</button>
+                                <div id="map-cond" className="map-box" style={{height:'350px'}}></div>
                             </div>
                         )}
 
                         {user.role === 'Estudiante' && (
                             <div className="card">
-                                <h1>{rutaSel}</h1>
-                                <div id="map-est" className="map-box" style={{height:'350px'}}></div>
-                                <p>¿Problemas con el bus?</p>
+                                <h1>Ubicación: {rutaSel}</h1>
+                                <div id="map-est" className="map-box" style={{height:'400px', marginBottom:'15px'}}></div>
                                 <button onClick={async() => {
                                     await supabaseClient.from('reportes').insert([{ruta: rutaSel, estudiante: user.name, motivo: 'Bus lleno', hora: new Date().toLocaleTimeString()}]);
-                                    alert("Reportado");
-                                }} className="btn" style={{color:'var(--red)'}}>🚨 Reportar Bus Lleno / No paró</button>
+                                    alert("Reporte enviado");
+                                }} className="btn" style={{color:'var(--red)'}}>🚨 Reportar Bus Lleno</button>
                             </div>
                         )}
                     </main>
