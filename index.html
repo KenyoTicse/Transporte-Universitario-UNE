@@ -23,7 +23,6 @@
         .status { font-size: 10px; font-weight: 800; padding: 4px 8px; border-radius: 6px; text-transform: uppercase; }
         .st-red { background: #fee2e2; color: #b91c1c; }
         .st-green { background: #dcfce7; color: #166534; }
-        .st-blue { background: #dbeafe; color: #1e40af; }
         table { width: 100%; border-collapse: collapse; font-size: 12px; }
         th, td { text-align: left; padding: 10px; border-bottom: 1px solid #f1f5f9; }
         .login-screen { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; }
@@ -49,53 +48,35 @@
 
         function App() {
             const [user, setUser] = useState(null);
-            const [reportes, setReportes] = useState([]);
-            const [loginsChofer, setLoginsChofer] = useState([]);
             const [rutaSel, setRutaSel] = useState("Ruta UNI");
+            
+            // Lógica para persistir reportes y logines
+            const [reportes, setReportes] = useState(() => JSON.parse(localStorage.getItem('reps')) || []);
+            const [loginsChofer, setLoginsChofer] = useState(() => JSON.parse(localStorage.getItem('logs')) || []);
+
+            useEffect(() => { localStorage.setItem('reps', JSON.stringify(reportes)); }, [reportes]);
+            useEffect(() => { localStorage.setItem('logs', JSON.stringify(loginsChofer)); }, [loginsChofer]);
 
             const handleLogin = (e) => {
                 e.preventDefault();
                 const id = e.target.id.value;
                 const dbUser = USUARIOS_DB[id];
-
                 if (!dbUser) return alert("Usuario no registrado");
-
-                if (dbUser.role === "Conductor") {
+                if (dbUser.role === "Conductor" || dbUser.pass === e.target.pass.value) {
                     setUser({ ...dbUser, id });
-                } else {
-                    const pass = e.target.pass.value;
-                    if (dbUser.pass === pass) {
-                        setUser({ ...dbUser, id });
-                    } else {
-                        alert("Contraseña incorrecta");
-                    }
-                }
+                } else { alert("Contraseña incorrecta"); }
             };
 
             const addReporte = (motivo) => {
-                const nuevo = {
-                    id: Date.now(),
-                    ruta: rutaSel,
-                    estudiante: user.name,
-                    motivo,
-                    hora: new Date().toLocaleTimeString(),
-                    fecha: new Date().toLocaleDateString()
-                };
+                const nuevo = { id: Date.now(), ruta: rutaSel, estudiante: user.name, motivo, hora: new Date().toLocaleTimeString() };
                 setReportes(prev => [nuevo, ...prev]);
-                alert("Reporte enviado con éxito.");
+                alert("Reporte guardado. El Admin lo verá al entrar.");
             };
 
             const addLogChofer = (placa, ruta) => {
-                const log = {
-                    id: Date.now(),
-                    nombre: user.name,
-                    placa,
-                    ruta,
-                    hora: new Date().toLocaleTimeString(),
-                    fecha: new Date().toLocaleDateString()
-                };
+                const log = { id: Date.now(), nombre: user.name, placa, ruta, hora: new Date().toLocaleTimeString() };
                 setLoginsChofer(prev => [log, ...prev]);
-                alert(`Inicio de turno registrado: Placa ${placa}`);
+                alert(`Ruta ${ruta} iniciada con placa ${placa}`);
             };
 
             if (!user) return (
@@ -117,10 +98,9 @@
             return (
                 <div className="flex">
                     <div className="side">
-                        <div style={{marginBottom:'20px'}}>
-                            <b>{user.name}</b><br/>
-                            <small className="status st-green">{user.role}</small>
-                        </div>
+                        <b>{user.name}</b>
+                        <small className="status st-green">{user.role}</small>
+                        <hr style={{width:'100%', border:'0.5px solid #eee'}}/>
                         {user.role === 'Estudiante' && RUTAS_LIST.map(r => (
                             <button key={r} onClick={()=>setRutaSel(r)} className={`btn ${rutaSel===r?'active':''}`}>🚍 {r}</button>
                         ))}
@@ -128,7 +108,6 @@
                     </div>
 
                     <main className="main">
-                        {/* PANEL ADMINISTRATIVO */}
                         {user.role === 'Administrativo' && (
                             <>
                                 <h2>Panel Administrativo</h2>
@@ -137,83 +116,61 @@
                                         <div key={r} className="card" style={{margin:0}}>
                                             <b>{r}</b>
                                             <div className="map-box">🗺️ GPS ACTIVO</div>
-                                            <div style={{fontSize:'11px', marginTop:'10px'}}>
-                                                <b>Paradero:</b> Santa Anita | <b>Tiempo:</b> 15 min
-                                            </div>
+                                            <div style={{fontSize:'11px', marginTop:'5px'}}>Paradero: Santa Anita | 15 min</div>
                                         </div>
                                     ))}
                                 </div>
-
                                 <div className="card" style={{marginTop:'20px'}}>
-                                    <h3>🚩 Incidencias de Estudiantes ({reportes.length})</h3>
+                                    <h3>🚩 Incidencias Estudiantiles</h3>
+                                    <button onClick={()=>{setReportes([]); localStorage.removeItem('reps')}} style={{fontSize:'10px', float:'right'}}>Limpiar</button>
                                     <table>
                                         <thead><tr><th>Ruta</th><th>Estudiante</th><th>Motivo</th><th>Hora</th></tr></thead>
                                         <tbody>
-                                            {reportes.length === 0 ? <tr><td colSpan="4">No hay reportes.</td></tr> : 
-                                                reportes.map(r => (<tr key={r.id}><td>{r.ruta}</td><td>{r.estudiante}</td><td><span className="st-red status">{r.motivo}</span></td><td>{r.hora}</td></tr>))
-                                            }
+                                            {reportes.map(r => (<tr key={r.id}><td>{r.ruta}</td><td>{r.estudiante}</td><td><span className="st-red status">{r.motivo}</span></td><td>{r.hora}</td></tr>))}
                                         </tbody>
                                     </table>
                                 </div>
-
                                 <div className="card">
-                                    <h3>🚍 Log de Conductores ({loginsChofer.length})</h3>
+                                    <h3>🚍 Log de Conductores</h3>
                                     <table>
                                         <thead><tr><th>Conductor</th><th>Placa</th><th>Ruta</th><th>Hora</th></tr></thead>
                                         <tbody>
-                                            {loginsChofer.length === 0 ? <tr><td colSpan="4">Sin inicios registrados.</td></tr> : 
-                                                loginsChofer.map(l => (<tr key={l.id}><td>{l.nombre}</td><td><b>{l.placa}</b></td><td>{l.ruta}</td><td>{l.hora}</td></tr>))
-                                            }
+                                            {loginsChofer.map(l => (<tr key={l.id}><td>{l.nombre}</td><td><b>{l.placa}</b></td><td>{l.ruta}</td><td>{l.hora}</td></tr>))}
                                         </tbody>
                                     </table>
                                 </div>
                             </>
                         )}
 
-                        {/* PANEL ESTUDIANTE */}
                         {user.role === 'Estudiante' && (
                             <div className="card">
                                 <h1>{rutaSel}</h1>
-                                <div className="grid-maps" style={{gridTemplateColumns:'1fr 1fr'}}>
-                                    <div>
-                                        <div className="card" style={{background: '#fef2f2'}}>
-                                            🔔 El bus llegará en <b>15 min</b> al paradero seleccionado.
-                                        </div>
-                                        <p>Reportar Incidencia:</p>
-                                        <button onClick={()=>addReporte("El bus no paró")} className="btn" style={{color:'var(--red)', marginBottom:'10px'}}>🚨 El bus no paró</button>
-                                        <div style={{display:'flex', gap:'5px', marginBottom:'20px'}}>
-                                            <input id="txt" placeholder="Detalles..." className="input-text" />
-                                            <button onClick={()=>{addReporte(document.getElementById('txt').value); document.getElementById('txt').value=''}} className="btn btn-p" style={{width:'80px'}}>Enviar</button>
-                                        </div>
-                                        <a href="#" className="btn">💬 WhatsApp Ruta</a>
-                                        <a href="#" className="btn">📢 Canal del transporte Universitario</a>
-                                    </div>
-                                    <div className="map-box" style={{height:'300px'}}>🗺️ MAPA EN TIEMPO REAL</div>
+                                <div className="card" style={{background:'#fef2f2'}}>🔔 Bus llegara en 15 min al paradero.</div>
+                                <p>Reportar Incidencia:</p>
+                                <button onClick={()=>addReporte("El bus no paró")} className="btn" style={{color:'var(--red)', marginBottom:'10px'}}>🚨 El bus no paró</button>
+                                <div style={{display:'flex', gap:'5px', marginBottom:'20px'}}>
+                                    <input id="txt" placeholder="Agregar detalles..." className="input-text" />
+                                    <button onClick={()=>{addReporte(document.getElementById('txt').value); document.getElementById('txt').value=''}} className="btn btn-p" style={{width:'80px'}}>Enviar</button>
                                 </div>
+                                <a href="#" className="btn">💬 WhatsApp Ruta</a>
+                                <a href="#" className="btn">📢 Canal del transporte Universitario</a>
                             </div>
                         )}
 
-                        {/* PANEL CONDUCTOR */}
                         {user.role === 'Conductor' && (
                             <div className="card">
                                 <h2>Registro de Turno</h2>
-                                <div className="card" style={{background:'#f8fafc'}}>
-                                    <p>Seleccione placa y ruta para iniciar:</p>
-                                    <div style={{display:'flex', gap:'10px', marginBottom:'15px'}}>
-                                        <select id="p" className="input-text"><option>EGB-402</option><option>A9N-012</option><option>B5F-992</option></select>
-                                        <select id="r" className="input-text">{RUTAS_LIST.map(r=><option key={r}>{r}</option>)}</select>
-                                    </div>
-                                    <button onClick={()=>addLogChofer(document.getElementById('p').value, document.getElementById('r').value)} className="btn btn-p">REGISTRAR INICIO</button>
-                                </div>
+                                <p>Seleccione placa y ruta:</p>
+                                <select id="p" className="input-text" style={{marginBottom:'10px'}}><option>EGB-402</option><option>A9N-012</option><option>B5F-992</option></select>
+                                <select id="r" className="input-text" style={{marginBottom:'10px'}}>{RUTAS_LIST.map(r=><option key={r}>{r}</option>)}</select>
+                                <button onClick={()=>addLogChofer(document.getElementById('p').value, document.getElementById('r').value)} className="btn btn-p">INICIAR RUTA</button>
                             </div>
                         )}
                     </main>
                 </div>
             );
         }
-
-        const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<App />);
+        ReactDOM.createRoot(document.getElementById('root')).render(<App />);
     </script>
 </body>
 </html>
