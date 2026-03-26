@@ -24,7 +24,7 @@
         .btn-p { background: var(--blue); color: #fff; border: none; justify-content: center; font-size: 15px; }
         .btn.active { background: var(--blue); color: #fff; border-color: var(--blue); }
         .grid-maps { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; }
-        .map-box { background: #eee; height: 180px; border-radius: 12px; border: 1px solid #ddd; }
+        .map-box { background: #eee; height: 220px; border-radius: 12px; border: 1px solid #ddd; position: relative; z-index: 1; }
         .status { font-size: 10px; font-weight: 800; padding: 4px 8px; border-radius: 6px; text-transform: uppercase; }
         .st-red { background: #fee2e2; color: #b91c1c; }
         .st-green { background: #dcfce7; color: #166534; }
@@ -36,11 +36,13 @@
 </head>
 <body>
     <div id="root"></div>
+
     <script type="text/babel">
         const { useState, useEffect, useRef } = React;
 
+        // --- CONFIGURACIÓN SUPABASE ---
         const SUPABASE_URL = 'https://vmltednkykuktcmfpjxw.supabase.co'; 
-        const SUPABASE_KEY = 'TU_CLAVE_PUBLISHABLE_AQUI'; 
+        const SUPABASE_KEY = 'PEGA_AQUÍ_TU_CLAVE_PUBLISHABLE'; // Reemplaza esto
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         const USUARIOS_DB = {
@@ -55,76 +57,87 @@
             const [user, setUser] = useState(null);
             const [rutaSel, setRutaSel] = useState("Ruta UNI");
             const [reportes, setReportes] = useState([]);
-            const [busMarkers, setBusMarkers] = useState({});
-            const mapsRef = useRef({});
+            const mapsRef = useRef({}); // Guardamos las instancias de los mapas aquí
 
-            // Cargar Reportes e Ubicaciones
+            // EFECTO PRINCIPAL: Carga inicial y Tiempo Real
             useEffect(() => {
-                if (user) {
-                    const fetchInicial = async () => {
-                        const { data: reps } = await supabaseClient.from('reportes').select('*').order('id', { ascending: false });
-                        if (reps) setReportes(reps);
-                        
-                        const { data: locs } = await supabaseClient.from('ubicaciones_buses').select('*');
-                        if (locs) locs.forEach(updateMarker);
-                    };
-                    fetchInicial();
+                if (!user) return;
 
-                    const channel = supabaseClient.channel('realtime')
-                        .on('postgres_changes', { event: '*', table: 'reportes' }, payload => {
-                            if (payload.eventType === 'INSERT') setReportes(prev => [payload.new, ...prev]);
-                        })
-                        .on('postgres_changes', { event: '*', table: 'ubicaciones_buses' }, payload => {
-                            updateMarker(payload.new);
-                        }).subscribe();
-                    
-                    return () => supabaseClient.removeChannel(channel);
-                }
-            }, [user]);
+                const cargarDatos = async () => {
+                    const { data } = await supabaseClient.from('reportes').select('*').order('id', { ascending: false });
+                    if (data) setReportes(data);
+                };
+                cargarDatos();
 
-            const updateMarker = (data) => {
-                if (!data) return;
-                const { ruta, latitud, longitud } = data;
-                // Lógica para actualizar marcadores en los mapas correspondientes
-            };
+                // Inicializar mapas después de que el DOM cargue
+                setTimeout(() => {
+                    if (user.role === 'Administrativo') {
+                        RUTAS_LIST.forEach(ruta => {
+                            const id = `map-${ruta.replace(/\s+/g, '')}`;
+                            if (document.getElementById(id) && !mapsRef.current[ruta]) {
+                                const m = L.map(id).setView([-11.947, -76.700], 14);
+                                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(m);
+                                mapsRef.current[ruta] = { map: m, marker: L.marker([-11.947, -76.700]).addTo(m) };
+                            }
+                        });
+                    } else if (user.role === 'Estudiante') {
+                        if (document.getElementById('map-est') && !mapsRef.current['est']) {
+                            const m = L.map('map-est').setView([-11.947, -76.700], 14);
+                            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(m);
+                            mapsRef.current['est'] = { map: m, marker: L.marker([-11.947, -76.700]).addTo(m) };
+                        }
+                    }
+                }, 500);
+
+                // Suscribirse a cambios en tiempo real
+                const canal = supabaseClient.channel('db-changes')
+                    .on('postgres_changes', { event: 'INSERT', table: 'reportes' }, p => setReportes(prev => [p.new, ...prev]))
+                    .on('postgres_changes', { event: '*', table: 'ubicaciones_buses' }, p => {
+                        const { ruta, latitud, longitud } = p.new;
+                        // Mover marcador en Admin
+                        if (user.role === 'Administrativo' && mapsRef.current[ruta]) {
+                            mapsRef.current[ruta].marker.setLatLng([latitud, longitud]);
+                        }
+                        // Mover marcador en Estudiante si es su ruta
+                        if (user.role === 'Estudiante' && ruta === rutaSel && mapsRef.current['est']) {
+                            mapsRef.current['est'].marker.setLatLng([latitud, longitud]);
+                        }
+                    }).subscribe();
+
+                return () => supabaseClient.removeChannel(canal);
+            }, [user, rutaSel]);
 
             const handleLogin = (e) => {
                 e.preventDefault();
-                const id = e.target.id.value;
-                const dbUser = USUARIOS_DB[id];
-                if (dbUser && (dbUser.role === "Conductor" || dbUser.pass === e.target.pass.value)) {
-                    setUser({ ...dbUser, id });
-                } else { alert("Error de acceso"); }
+                const u = USUARIOS_DB[e.target.id.value];
+                if (u && (u.role === "Conductor" || u.pass === e.target.pass.value)) {
+                    setUser({...u, id: e.target.id.value});
+                } else alert("Datos incorrectos");
             };
 
-            const addReporte = async (motivo) => {
-                await supabaseClient.from('reportes').insert([{ ruta: rutaSel, estudiante: user.name, motivo, hora: new Date().toLocaleTimeString() }]);
-                alert("Reporte enviado");
-            };
-
-            // FUNCIÓN GPS CONDUCTOR
-            const iniciarRuta = (placa, ruta) => {
-                if ("geolocation" in navigator) {
+            const iniciarGPS = () => {
+                const r = document.getElementById('sel-ruta').value;
+                if (navigator.geolocation) {
                     navigator.geolocation.watchPosition(async (pos) => {
                         await supabaseClient.from('ubicaciones_buses').upsert({
-                            id: user.id, ruta, latitud: pos.coords.latitude, longitud: pos.coords.longitude
+                            id: user.id, ruta: r, latitud: pos.coords.latitude, longitud: pos.coords.longitude
                         });
-                    });
-                    alert(`Ruta ${ruta} iniciada con placa ${placa}`);
+                    }, null, { enableHighAccuracy: true });
+                    alert("Transmitiendo ubicación de " + r);
                 }
             };
 
             if (!user) return (
                 <div className="flex">
                     <div className="login-screen" style={{background: 'var(--dark)', color: '#fff'}}>
-                        <h1 style={{fontSize: '4rem', fontWeight: 900}}>Bus cantuteño</h1>
+                        <h1 style={{fontSize: '3rem'}}>Bus Cantuta</h1>
                     </div>
                     <div className="login-screen">
-                        <form onSubmit={handleLogin} style={{width: '300px', display:'flex', flexDirection:'column', gap:'10px'}}>
-                            <h2>Iniciar Sesión</h2>
-                            <input name="id" placeholder="DNI o Código" required className="input-text" />
+                        <form onSubmit={handleLogin} style={{width: '280px', display:'flex', flexDirection:'column', gap:'10px'}}>
+                            <h2>Ingresar</h2>
+                            <input name="id" placeholder="Código/DNI" className="input-text" required />
                             <input name="pass" type="password" placeholder="Contraseña" className="input-text" />
-                            <button className="btn btn-p">INGRESAR</button>
+                            <button className="btn btn-p">ENTRAR</button>
                         </form>
                     </div>
                 </div>
@@ -135,31 +148,31 @@
                     <div className="side">
                         <b>{user.name}</b>
                         <small className="status st-green">{user.role}</small>
-                        <hr style={{width:'100%', border:'0.5px solid #eee'}}/>
+                        <hr style={{width:'100%', border:'none', borderTop:'1px solid #eee'}}/>
                         {user.role === 'Estudiante' && RUTAS_LIST.map(r => (
                             <button key={r} onClick={()=>setRutaSel(r)} className={`btn ${rutaSel===r?'active':''}`}>🚍 {r}</button>
                         ))}
-                        <button onClick={()=>setUser(null)} className="btn" style={{marginTop:'auto', color:'var(--red)'}}>🚪 Salir</button>
+                        <button onClick={()=>location.reload()} className="btn" style={{marginTop:'auto', color:'var(--red)'}}>Salir</button>
                     </div>
 
                     <main className="main">
                         {user.role === 'Administrativo' && (
                             <>
-                                <h2>Panel Administrativo - Multi Mapas</h2>
+                                <h2>Monitor de Rutas en Tiempo Real</h2>
                                 <div className="grid-maps">
                                     {RUTAS_LIST.map(r => (
                                         <div key={r} className="card" style={{margin:0}}>
-                                            <b>{r}</b>
-                                            <div id={`map-${r.replace(/ /g, '')}`} className="map-box"></div>
+                                            <p><b>{r}</b></p>
+                                            <div id={`map-${r.replace(/\s+/g, '')}`} className="map-box"></div>
                                         </div>
                                     ))}
                                 </div>
                                 <div className="card" style={{marginTop:'20px'}}>
-                                    <h3>🚩 Incidencias Estudiantiles</h3>
+                                    <h3>Reportes Recientes</h3>
                                     <table>
-                                        <thead><tr><th>Ruta</th><th>Estudiante</th><th>Motivo</th><th>Hora</th></tr></thead>
+                                        <thead><tr><th>Ruta</th><th>Motivo</th><th>Hora</th></tr></thead>
                                         <tbody>
-                                            {reportes.map(r => (<tr key={r.id}><td>{r.ruta}</td><td>{r.estudiante}</td><td><span className="st-red status">{r.motivo}</span></td><td>{r.hora}</td></tr>))}
+                                            {reportes.map(rep => <tr key={rep.id}><td>{rep.ruta}</td><td>{rep.motivo}</td><td>{rep.hora}</td></tr>)}
                                         </tbody>
                                     </table>
                                 </div>
@@ -168,21 +181,24 @@
 
                         {user.role === 'Conductor' && (
                             <div className="card">
-                                <h2>Registro de Turno y GPS</h2>
-                                <p>Seleccione placa y ruta para empezar a transmitir:</p>
-                                <select id="p" className="input-text" style={{marginBottom:'10px'}}><option>EGB-402</option><option>A9N-012</option></select>
-                                <select id="r" className="input-text" style={{marginBottom:'10px'}}>{RUTAS_LIST.map(r=><option key={r}>{r}</option>)}</select>
-                                <button onClick={()=>iniciarRuta(document.getElementById('p').value, document.getElementById('r').value)} className="btn btn-p">📡 INICIAR TRANSMISIÓN GPS</button>
+                                <h2>Panel de Conducción</h2>
+                                <p>Selecciona tu ruta actual:</p>
+                                <select id="sel-ruta" className="input-text" style={{marginBottom:'10px'}}>
+                                    {RUTAS_LIST.map(r => <option key={r} value={r}>{r}</option>)}
+                                </select>
+                                <button onClick={iniciarGPS} className="btn btn-p" style={{background:'var(--green)'}}>📡 INICIAR GPS</button>
                             </div>
                         )}
 
                         {user.role === 'Estudiante' && (
                             <div className="card">
                                 <h1>{rutaSel}</h1>
-                                <div id="map-estudiante" className="map-box" style={{height:'300px', marginBottom:'15px'}}></div>
-                                <button onClick={()=>addReporte("El bus no paró")} className="btn" style={{color:'var(--red)', marginBottom:'10px'}}>🚨 El bus no paró</button>
-                                <input id="txt" placeholder="Detalles..." className="input-text" />
-                                <button onClick={()=>addReporte(document.getElementById('txt').value)} className="btn btn-p" style={{marginTop:'10px'}}>Enviar</button>
+                                <div id="map-est" className="map-box" style={{height:'350px'}}></div>
+                                <p>¿Problemas con el bus?</p>
+                                <button onClick={async() => {
+                                    await supabaseClient.from('reportes').insert([{ruta: rutaSel, estudiante: user.name, motivo: 'Bus lleno', hora: new Date().toLocaleTimeString()}]);
+                                    alert("Reportado");
+                                }} className="btn" style={{color:'var(--red)'}}>🚨 Reportar Bus Lleno / No paró</button>
                             </div>
                         )}
                     </main>
