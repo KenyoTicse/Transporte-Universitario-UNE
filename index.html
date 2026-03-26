@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bus Cantuteño - Sistema Integral</title>
+    <title>Bus Cantuteño - Sistema UNE</title>
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -14,76 +14,123 @@
         .side { width: 280px; background: #fff; padding: 20px; display: flex; flex-direction: column; gap: 10px; border-right: 1px solid #e2e8f0; }
         .main { flex: 1; padding: 25px; overflow-y: auto; }
         .card { background: #fff; border-radius: 16px; padding: 20px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); border: 1px solid #f1f5f9; margin-bottom: 20px; }
-        .btn { padding: 12px; border-radius: 10px; border: 1px solid #e2e8f0; background: #fff; cursor: pointer; font-weight: 600; width: 100%; display: flex; align-items: center; gap: 10px; transition: 0.2s; text-decoration: none; color: inherit; font-size: 14px; }
+        .btn { padding: 12px; border-radius: 10px; border: 1px solid #e2e8f0; background: #fff; cursor: pointer; font-weight: 600; width: 100%; display: flex; align-items: center; gap: 10px; transition: 0.2s; text-decoration: none; color: inherit; font-size: 13px; }
         .btn:hover { background: #f8fafc; border-color: var(--blue); }
-        .btn-p { background: var(--blue); color: #fff; border: none; justify-content: center; font-size: 16px; }
+        .btn-p { background: var(--blue); color: #fff; border: none; justify-content: center; font-size: 15px; }
         .btn.active { background: var(--blue); color: #fff; border-color: var(--blue); }
         .grid-maps { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; }
-        .map-box { background: #eee; height: 180px; border-radius: 12px; display: flex; align-items: center; justify-content: center; position: relative; }
-        .status { font-size: 11px; font-weight: 800; padding: 4px 8px; border-radius: 6px; text-transform: uppercase; }
+        .map-box { background: #eee; height: 140px; border-radius: 12px; display: flex; align-items: center; justify-content: center; position: relative; font-size: 11px; color: #666; }
+        .status { font-size: 10px; font-weight: 800; padding: 4px 8px; border-radius: 6px; text-transform: uppercase; }
         .st-red { background: #fee2e2; color: #b91c1c; }
         .st-green { background: #dcfce7; color: #166534; }
-        table { width: 100%; border-collapse: collapse; font-size: 13px; }
-        th, td { text-align: left; padding: 12px; border-bottom: 1px solid #f1f5f9; }
-        .login-screen { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+        .st-blue { background: #dbeafe; color: #1e40af; }
+        table { width: 100%; border-collapse: collapse; font-size: 12px; }
+        th, td { text-align: left; padding: 10px; border-bottom: 1px solid #f1f5f9; }
+        .login-screen { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; }
+        .input-text { padding: 12px; border-radius: 10px; border: 1px solid #ddd; width: 100%; box-sizing: border-box; }
     </style>
 </head>
 <body>
     <div id="root"></div>
     <script type="text/babel">
-        const { useState } = React;
+        const { useState, useEffect } = React;
 
-        const RUTAS_DATA = {
-            "Ruta UNI": { placa: "EGB-402", cond: "Jorge Ramos", link: "https://chat.whatsapp.com/I2mw9VmXvgnL5Y7Mzuf3tj" },
-            "Ruta Puente Nuevo": { placa: "A9N-012", cond: "Raul Perez", link: "https://chat.whatsapp.com/IQTb0HJVjhBD0kiWqe56Ks" },
-            "Ruta Santa Anita": { placa: "B5F-992", cond: "M. Quispe", link: "https://chat.whatsapp.com/DcOWGPkPvpD39PvA2B7iWH" },
-            "Ruta Bolognesi": { placa: "C1T-551", cond: "L. Huaman", link: "https://chat.whatsapp.com/BEAlEiyUc3QIMdM0jUpHSY" }
+        // --- BASE DE DATOS INICIAL ---
+        const USUARIOS_DB = {
+            "Admin": { pass: "Admin1", role: "Administrativo", name: "Administrador Cantuta", mail: "admin@une.edu.pe", first: true },
+            "20223691": { pass: "20223691", role: "Estudiante", name: "KENYO PANTALEON TICSE HERRERA", mail: "20223691@une.edu.pe", first: true },
+            "20212095": { pass: "20212095", role: "Estudiante", name: "ALEXANDER QUISPE NAJARRO", mail: "20212095@une.edu.pe", first: true },
+            "20223659": { pass: "20223659", role: "Estudiante", name: "SONIA RIVERA EVANGELISTA", mail: "20223659@une.edu.pe", first: true },
+            "20221293": { pass: "20221293", role: "Estudiante", name: "JORGE GUSTAVO PINEDA CABELLO", mail: "20221293@une.edu.pe", first: true },
+            "12345678": { role: "Conductor", name: "LUIS PEREZ GALVEZ", placa: "" },
+            "87654321": { role: "Conductor", name: "ESTEBAN NEYRA HUARI", placa: "" }
         };
-        const CANAL_WHATSAPP = "https://whatsapp.com/channel/0029VbCR9BS9MF8ypba5gy0o";
+
+        const PLACAS_DISPONIBLES = ["EGB-402", "A9N-012", "B5F-992", "C1T-551"];
+        const RUTAS_LIST = ["Ruta UNI", "Ruta Puente Nuevo", "Ruta Santa Anita", "Ruta Bolognesi"];
 
         const App = () => {
-            const [user, setUser] = useState({ logged: false, role: '', name: '' });
-            const [rutaSel, setRutaSel] = useState("Ruta UNI");
+            const [view, setView] = useState("login");
+            const [user, setUser] = useState(null);
             const [reportes, setReportes] = useState([]);
-            const [coAdmins, setCoAdmins] = useState([{id: 1, name: 'Lucas', role: 'Lector'}]);
+            const [loginsChofer, setLoginsChofer] = useState([]);
+            const [rutaSel, setRutaSel] = useState("Ruta UNI");
+
+            // --- LÓGICA DE LOGIN ---
+            const handleLogin = (e) => {
+                e.preventDefault();
+                const id = e.target.id.value;
+                const dbUser = USUARIOS_DB[id];
+
+                if (!dbUser) return alert("Usuario no registrado");
+
+                if (dbUser.role === "Conductor") {
+                    const choferData = { ...dbUser, id, logged: true };
+                    setUser(choferData);
+                    setView("main");
+                } else {
+                    const pass = e.target.pass.value;
+                    if (dbUser.pass === pass) {
+                        const userData = { ...dbUser, id, logged: true };
+                        setUser(userData);
+                        setView(userData.first ? "changePass" : "main");
+                    } else {
+                        alert("Contraseña incorrecta");
+                    }
+                }
+            };
+
+            const registrarIngresoChofer = (placa, ruta) => {
+                const log = {
+                    id: Date.now(),
+                    nombre: user.name,
+                    placa,
+                    ruta,
+                    fecha: new Date().toLocaleDateString(),
+                    hora: new Date().toLocaleTimeString()
+                };
+                setLoginsChofer([log, ...loginsChofer]);
+                alert("Ingreso registrado correctamente");
+            };
 
             const enviarReporte = (motivo) => {
-                const nuevoReporte = {
+                const rep = {
                     id: Date.now(),
-                    hora: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
-                    conductor: RUTAS_DATA[rutaSel].cond,
-                    placa: RUTAS_DATA[rutaSel].placa,
                     ruta: rutaSel,
-                    motivo: motivo
+                    estudiante: user.name,
+                    motivo: motivo,
+                    hora: new Date().toLocaleTimeString(),
+                    fecha: new Date().toLocaleDateString()
                 };
-                setReportes([nuevoReporte, ...reportes]);
-                alert("🚨 Reporte enviado con éxito.");
+                setReportes([rep, ...reportes]);
+                alert("Reporte enviado al panel administrativo");
             };
 
-            const copiarTexto = (ruta) => {
-                const texto = `📌 *ESTADO DE RUTA*\n📍 RUTA: ${ruta}\n🚌 PARADERO ACTUAL: Puente Santa Anita\n⏰ TIEMPO ESTIMADO: 15 min`;
-                navigator.clipboard.writeText(texto);
-                alert("Datos de ruta copiados.");
-            };
-
-            if (!user.logged) return (
+            // --- VISTAS ---
+            if (view === "login") return (
                 <div className="flex">
                     <div className="login-screen" style={{background: 'var(--dark)', color: '#fff'}}>
-                        <h1 style={{fontSize: '4.5rem', margin: 0, fontWeight: 900}}>Bus cantuteño</h1>
+                        <h1 style={{fontSize: '4rem', fontWeight: 900}}>Bus cantuteño</h1>
                     </div>
-                    <div className="login-screen" style={{background: '#fff'}}>
-                        <form onSubmit={(e) => { e.preventDefault(); setUser({logged:true, role: e.target.rol.value, name: e.target.user.value}); }} style={{width: '320px', display:'flex', flexDirection:'column', gap:'15px'}}>
-                            <h2 style={{textAlign: 'center'}}>Iniciar Sesión</h2>
-                            <select name="rol" className="btn">
-                                <option value="Estudiante">Estudiante</option>
-                                <option value="Conductor">Conductor</option>
-                                <option value="Administrativo">Administrativo</option>
-                                <option value="Coadmin">Coadministrador (Lector)</option>
-                            </select>
-                            <input name="user" placeholder="Usuario / Código" required style={{padding:'15px', borderRadius:'10px', border:'1px solid #ddd'}} />
-                            <input type="password" placeholder="Contraseña" required style={{padding:'15px', borderRadius:'10px', border:'1px solid #ddd'}} />
+                    <div className="login-screen">
+                        <form onSubmit={handleLogin} style={{width: '300px', display:'flex', flexDirection:'column', gap:'10px'}}>
+                            <h2>Iniciar Sesión</h2>
+                            <input name="id" placeholder="DNI o Código" required className="input-text" />
+                            <input name="pass" type="password" placeholder="Contraseña (Omitir si es conductor)" className="input-text" />
                             <button className="btn btn-p">INGRESAR</button>
+                            <small style={{cursor:'pointer', color: 'var(--blue)'}} onClick={()=>alert("Contacte a soporte técnico: soporte@une.edu.pe")}>¿Olvidé mi contraseña?</small>
                         </form>
+                    </div>
+                </div>
+            );
+
+            if (view === "changePass") return (
+                <div className="login-screen">
+                    <div className="card" style={{width: '350px'}}>
+                        <h3>Primer Inicio de Sesión</h3>
+                        <p>Por seguridad, cambie su contraseña:</p>
+                        <input id="newP" type="password" placeholder="Nueva Contraseña" className="input-text" style={{marginBottom:'10px'}} />
+                        <button className="btn btn-p" onClick={()=>{setUser({...user, first:false}); setView("main")}}>ACTUALIZAR Y CONTINUAR</button>
                     </div>
                 </div>
             );
@@ -95,35 +142,81 @@
                             <b>{user.name}</b><br/>
                             <small className="status st-green">{user.role}</small>
                         </div>
-                        
-                        {(user.role !== 'Administrativo') && Object.keys(RUTAS_DATA).map(r => (
+                        {user.role === 'Estudiante' && RUTAS_LIST.map(r => (
                             <button key={r} onClick={()=>setRutaSel(r)} className={`btn ${rutaSel===r?'active':''}`}>🚍 {r}</button>
                         ))}
-
-                        {user.role === 'Administrativo' && (
-                            <>
-                                <button className="btn active">📊 Reportes y Multivista</button>
-                                <button className="btn">👥 Gestionar Co-Admins</button>
-                            </>
-                        )}
-
-                        <button onClick={()=>setUser({logged:false})} className="btn" style={{marginTop:'auto', color:'var(--red)'}}>🚪 Cerrar Sesión</button>
+                        <button onClick={()=>{setUser(null); setView("login")}} className="btn" style={{marginTop:'auto', color:'var(--red)'}}>🚪 Salir</button>
                     </div>
 
                     <main className="main">
+                        {/* PANEL ADMINISTRATIVO */}
+                        {user.role === 'Administrativo' && (
+                            <>
+                                <h2>Control General Administrativo</h2>
+                                <div className="grid-maps">
+                                    {RUTAS_LIST.map(r => (
+                                        <div key={r} className="card" style={{margin:0}}>
+                                            <div style={{display:'flex', justifyContent:'space-between', marginBottom:'10px'}}>
+                                                <b>{r}</b>
+                                                <button onClick={()=>alert("Texto copiado para WhatsApp")} className="btn" style={{width:'auto', padding:'4px 8px', fontSize:'10px'}}>📋 Enviar</button>
+                                            </div>
+                                            <div className="map-box">🗺️ GPS EN VIVO</div>
+                                            <div style={{fontSize:'11px', marginTop:'10px'}}>
+                                                <b>Paradero a llegar:</b> Puente Santa Anita<br/>
+                                                <b>Tiempo de llegada:</b> 15 min
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+
+                                <div className="card" style={{marginTop:'20px'}}>
+                                    <h3>🚩 Reportes Estudiantiles (Incidencias)</h3>
+                                    <table>
+                                        <thead><tr><th>Ruta</th><th>Estudiante</th><th>Motivo</th><th>Hora/Fecha</th></tr></thead>
+                                        <tbody>
+                                            {reportes.length === 0 ? <tr><td colSpan="4">Sin incidencias</td></tr> : 
+                                                reportes.map(r => (
+                                                <tr key={r.id}><td>{r.ruta}</td><td>{r.estudiante}</td><td><span className="status st-red">{r.motivo}</span></td><td>{r.hora} - {r.fecha}</td></tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                                <div className="card">
+                                    <h3>🚍 Control de Inicio de Conductores</h3>
+                                    <table>
+                                        <thead><tr><th>Conductor</th><th>Placa</th><th>Ruta</th><th>Hora/Fecha</th></tr></thead>
+                                        <tbody>
+                                            {loginsChofer.length === 0 ? <tr><td colSpan="4">Ningún inicio registrado</td></tr> : 
+                                                loginsChofer.map(l => (
+                                                <tr key={l.id}><td>{l.nombre}</td><td><b>{l.placa}</b></td><td>{l.ruta}</td><td><span className="status st-blue">{l.hora} - {l.fecha}</span></td></tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </>
+                        )}
+
                         {/* PANEL ESTUDIANTE */}
                         {user.role === 'Estudiante' && (
                             <div className="card">
-                                <h1 style={{color: 'var(--red)', marginTop: 0}}>{rutaSel.toUpperCase()}</h1>
+                                <h1 style={{color: 'var(--red)', marginTop: 0}}>{rutaSel}</h1>
                                 <div className="grid-maps" style={{gridTemplateColumns:'1.2fr 1fr'}}>
                                     <div>
+                                        <div className="card" style={{background: '#fef2f2', border: '1px solid #fee2e2'}}>
+                                            <b>Notificación:</b><br/>🚍 El bus llegará en 15 min al paradero UNI.
+                                        </div>
                                         <p>Reportar incidencia:</p>
-                                        <button onClick={()=>enviarReporte("Bus no paró estando vacío")} className="btn" style={{color:'var(--red)', borderColor:'var(--red)', marginBottom:'15px'}}>🚨 El bus no paró (Vacío)</button>
-                                        <b style={{display:'block', marginBottom:'10px'}}>Enlaces Rápidos:</b>
-                                        <a href={RUTAS_DATA[rutaSel].link} target="_blank" className="btn" style={{marginBottom:'10px'}}>💬 WhatsApp {rutaSel}</a>
-                                        <a href={CANAL_WHATSAPP} target="_blank" className="btn">📢 Canal Oficial (Anuncios)</a>
+                                        <button onClick={()=>enviarReporte("El bus no paró")} className="btn" style={{color:'var(--red)', marginBottom:'10px'}}>🚨 El bus no paró</button>
+                                        <div style={{display:'flex', gap:'5px'}}>
+                                            <input id="txtRep" placeholder="Agregar texto..." className="input-text" style={{fontSize:'12px'}} />
+                                            <button onClick={()=>{enviarReporte(document.getElementById('txtRep').value)}} className="btn btn-p" style={{width:'80px'}}>Enviar</button>
+                                        </div>
+                                        <br/>
+                                        <a href="#" className="btn">💬 WhatsApp de la Ruta</a>
+                                        <a href="#" className="btn">📢 Canal del transporte Universitario</a>
                                     </div>
-                                    <div className="map-box" style={{height: '350px'}}>📍 Mapa en vivo...</div>
+                                    <div className="map-box" style={{height:'350px'}}>🗺️ Mapa en tiempo real</div>
                                 </div>
                             </div>
                         )}
@@ -131,76 +224,21 @@
                         {/* PANEL CONDUCTOR */}
                         {user.role === 'Conductor' && (
                             <div className="card">
-                                <h2>Panel Conductor: {rutaSel}</h2>
-                                <p>Placa: <b>{RUTAS_DATA[rutaSel].placa}</b> | Unidad asignada</p>
-                                <div className="map-box" style={{height: '300px', marginBottom: '20px'}}>📍 GPS Detectado</div>
-                                <div style={{display:'flex', gap:'10px'}}>
-                                    <button className="btn btn-p" style={{flex:2}}>📢 COMPARTIR MI UBICACIÓN</button>
-                                    <button onClick={()=>alert("Alerta de bus lleno enviada")} className="btn" style={{flex:1, color:'var(--red)'}}>⏰ BUS LLENO</button>
-                                </div>
-                            </div>
-                        )}
-
-                        {/* PANEL ADMINISTRATIVO */}
-                        {user.role === 'Administrativo' && (
-                            <>
-                                <h2>Multivista de Rutas</h2>
-                                <div className="grid-maps" style={{marginBottom:'30px'}}>
-                                    {Object.keys(RUTAS_DATA).map(r => (
-                                        <div key={r} className="card" style={{padding:'10px', margin:0}}>
-                                            <div style={{display:'flex', justifyContent:'space-between', marginBottom:'10px'}}>
-                                                <b style={{fontSize:'12px'}}>{r}</b>
-                                                <button onClick={()=>copiarTexto(r)} style={{fontSize:'10px', cursor:'pointer'}}>📋 Enviar Datos</button>
-                                            </div>
-                                            <div className="map-box" style={{height:'100px'}}>🗺️ Vista GPS</div>
-                                        </div>
-                                    ))}
-                                </div>
-
-                                <div className="card">
-                                    <h3>🚩 Reportes Recibidos</h3>
-                                    <table>
-                                        <thead><tr><th>Hora</th><th>Ruta</th><th>Placa</th><th>Incidencia</th><th>Acción</th></tr></thead>
-                                        <tbody>
-                                            {reportes.length === 0 ? <tr><td colSpan="5" style={{textAlign:'center'}}>Sin reportes nuevos</td></tr> : 
-                                                reportes.map(rep => (
-                                                <tr key={rep.id}>
-                                                    <td>{rep.hora}</td><td>{rep.ruta}</td><td>{rep.placa}</td>
-                                                    <td><span className="status st-red">{rep.motivo}</span></td>
-                                                    <td><button className="status st-green" style={{border:'none', cursor:'pointer'}}>Archivar</button></td>
-                                                </tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
-                                </div>
-
-                                <div className="card">
-                                    <h3>👥 Co-Administradores (Lectores)</h3>
+                                <h2>Panel de Conductor</h2>
+                                <p>Bienvenido: <b>{user.name}</b></p>
+                                <div className="card" style={{background: '#f8fafc'}}>
+                                    <h4>Registrar Inicio de Turno</h4>
                                     <div style={{display:'flex', gap:'10px', marginBottom:'15px'}}>
-                                        <input id="newCo" placeholder="Nombre" className="btn" style={{width:'200px'}} />
-                                        <button onClick={()=>{
-                                            const v = document.getElementById('newCo').value;
-                                            if(v) setCoAdmins([...coAdmins, {id: Date.now(), name: v, role: 'Lector'}]);
-                                        }} className="btn btn-p" style={{width:'100px'}}>Añadir</button>
+                                        <select id="selPlaca" className="btn">
+                                            {PLACAS_DISPONIBLES.map(p => <option key={p} value={p}>{p}</option>)}
+                                        </select>
+                                        <select id="selRuta" className="btn">
+                                            {RUTAS_LIST.map(r => <option key={r} value={r}>{r}</option>)}
+                                        </select>
                                     </div>
-                                    {coAdmins.map(co => (
-                                        <div key={co.id} style={{padding:'8px', borderBottom:'1px solid #eee', display:'flex', justifyContent:'space-between'}}>
-                                            <span>👤 {co.name}</span><span className="status st-green">Lector</span>
-                                        </div>
-                                    ))}
+                                    <button onClick={()=>registrarIngresoChofer(document.getElementById('selPlaca').value, document.getElementById('selRuta').value)} className="btn btn-p">INICIAR SESIÓN DE RUTA</button>
                                 </div>
-                            </>
-                        )}
-
-                        {/* PANEL CO-ADMIN (LECTOR) */}
-                        {user.role === 'Coadmin' && (
-                            <div className="card">
-                                <h2>Vista de Monitoreo Lector</h2>
-                                <div className="grid-maps">
-                                    {Object.keys(RUTAS_DATA).map(r => (
-                                        <div key={r} className="map-box" style={{height: '200px'}}>🗺️ Mapa {r}</div>
-                                    ))}
-                                </div>
+                                <div className="map-box" style={{height:'200px', marginTop:'20px'}}>GPS ACTIVADO</div>
                             </div>
                         )}
                     </main>
