@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cantured UNE - Movilidad</title>
+    <title>Bus Cantuteño - Movilidad UNE</title>
     
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -13,8 +13,8 @@
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
     <style>
-        :root { --blue: #0056b3; --red: #d93025; --green: #1e8e3e; --bg: #f1f3f4; }
-        body { margin: 0; font-family: 'Roboto', sans-serif; background: var(--bg); color: #3c4043; }
+        :root { --blue: #0056b3; --dark: #0a192f; --red: #d93025; --green: #1e8e3e; --bg: #f1f3f4; }
+        body { margin: 0; font-family: 'Roboto', sans-serif; background: var(--bg); color: #3c4043; overflow: hidden; }
         
         /* DISEÑO DE LOGIN (Estilo imagen_4102db.png) */
         .login-bg { 
@@ -28,26 +28,31 @@
             padding: 40px; border-radius: 20px; 
             width: 350px; border: 1px solid rgba(255,255,255,0.2);
             box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-            text-align: center; color: white;
+            text-align: center; color: white; /* Letras blancas en login */
         }
+        .login-card h2 { margin-bottom: 30px; font-weight: 300; letter-spacing: 2px; color: white; }
         .input-login { 
             width: 100%; padding: 12px; margin-bottom: 15px; border-radius: 8px; 
-            border: none; background: rgba(255,255,255,0.2); color: white; box-sizing: border-box;
+            border: none; background: rgba(255,255,255,0.2); color: white; outline: none; box-sizing: border-box;
         }
+        .input-login::placeholder { color: #cbd5e1; }
         .btn-login { 
             width: 100%; padding: 12px; border-radius: 8px; border: none; 
-            background: #3b82f6; color: white; font-weight: bold; cursor: pointer;
+            background: #3b82f6; color: white; font-weight: bold; cursor: pointer; transition: 0.3s;
         }
+        .btn-login:hover { background: #2563eb; }
 
-        /* DASHBOARD */
+        /* HEADER Y DASHBOARD */
         .header { background: var(--blue); color: white; padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; height: 60px; }
         .flex { display: flex; height: calc(100vh - 60px); }
-        .side { width: 240px; background: #fff; padding: 15px; border-right: 1px solid #dadce0; }
+        .side { width: 240px; background: #fff; padding: 15px; border-right: 1px solid #dadce0; display: flex; flex-direction: column; }
         .main { flex: 1; padding: 20px; overflow-y: auto; }
-        .btn-ruta { padding: 10px; border-radius: 6px; border: 1px solid #ddd; background: #fff; cursor: pointer; width: 100%; margin-bottom: 5px; text-align: left; }
+        
+        .btn-ruta { padding: 10px 15px; border-radius: 6px; border: 1px solid #ddd; background: #fff; cursor: pointer; width: 100%; text-align: left; margin-bottom: 5px; }
         .btn-ruta.active { background: #e8f0fe; color: #1967d2; border-color: #1967d2; font-weight: bold; }
-        .card { background: #fff; border-radius: 8px; border: 1px solid #dadce0; padding: 20px; text-align: center; }
-        .map-box { height: 400px; border-radius: 8px; border: 1px solid #dadce0; margin-top: 20px; }
+        
+        .card { background: #fff; border-radius: 8px; border: 1px solid #dadce0; padding: 20px; margin-bottom: 20px; }
+        .map-box { height: 400px; border-radius: 8px; border: 1px solid #dadce0; background: #eee; margin-top: 20px; z-index: 1; }
     </style>
 </head>
 <body>
@@ -56,15 +61,19 @@
     <script type="text/babel">
         const { useState, useEffect, useRef } = React;
 
+        // --- CONFIGURACIÓN SUPABASE (Tus claves reales) ---
         const SUPABASE_URL = 'https://vmltednkykuktcmfpjxw.supabase.co'; 
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZtbHRlZG5reWt1a3RjbWZwanh3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ0ODUwNTEsImV4cCI6MjA5MDA2MTA1MX0.kKS03A0zburhy3_7SkY-cYs8yyzXjwPihX-2Xqy8jqg'; 
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         const USUARIOS_DB = {
-            "Admin": { pass: "Admin1", role: "Administrativo", name: "Administrador Cantuta" },
+            "Admin": { pass: "Admin1", role: "Administrativo", name: "Administrador UNE" },
             "20223691": { pass: "20223691", role: "Estudiante", name: "KENYO PANTALEON TICSE HERRERA" },
             "12345678": { role: "Conductor", name: "LUIS PEREZ GALVEZ" }
         };
+
+        // 1. Restaurada la Ruta Santa Anita
+        const RUTAS_LIST = ["Ruta UNI", "Ruta Bolognesi", "Ruta Puente Nuevo", "Ruta Santa Anita"];
 
         function App() {
             const [user, setUser] = useState(null);
@@ -75,12 +84,15 @@
 
             const handleLogin = (e) => {
                 e.preventDefault();
-                const u = USUARIOS_DB[e.target.id.value];
-                if (u && (u.role === "Conductor" || u.pass === e.target.pass.value)) {
-                    setUser({...u, id: e.target.id.value});
+                const id = e.target.id.value;
+                const pass = e.target.pass.value;
+                const u = USUARIOS_DB[id];
+                if (u && (u.role === "Conductor" || u.pass === pass)) {
+                    setUser({...u, id: id});
                 } else alert("Credenciales incorrectas");
             };
 
+            // 2. Lógica de Iniciar/Detener Rastreo
             const toggleGPS = () => {
                 if (!isTracking) {
                     if (navigator.geolocation) {
@@ -95,11 +107,12 @@
                             });
                         }, (err) => alert("Error: " + err.message), { enableHighAccuracy: true });
                         setIsTracking(true);
+                        alert("📡 Rastreo Iniciado para " + rutaSel);
                     }
                 } else {
                     navigator.geolocation.clearWatch(watchId.current);
                     setIsTracking(false);
-                    alert("📡 GPS Apagado");
+                    alert("🛑 Rastreo Detenido");
                 }
             };
 
@@ -113,15 +126,28 @@
                         mapsRef.current[mapId] = { map: m, marker: L.marker([-11.947, -76.700]).addTo(m) };
                     }
                 }, 500);
-            }, [user]);
+
+                // Suscripción Realtime (Solo para Admin y Estudiante)
+                if (user.role !== 'Conductor') {
+                    const canal = supabaseClient.channel('db-changes')
+                        .on('postgres_changes', { event: '*', table: 'ubicaciones_buses' }, p => {
+                            const { ruta, latitud, longitud } = p.new;
+                            if (ruta === rutaSel && mapsRef.current['map-view']) {
+                                mapsRef.current['map-view'].marker.setLatLng([latitud, longitud]);
+                                mapsRef.current['map-view'].map.panTo([latitud, longitud]);
+                            }
+                        }).subscribe();
+                    return () => supabaseClient.removeChannel(canal);
+                }
+            }, [user, rutaSel]);
 
             if (!user) return (
                 <div className="login-bg">
                     <form className="login-card" onSubmit={handleLogin}>
-                        <h2>LOGIN</h2>
-                        <input name="id" placeholder="Username" className="input-login" required />
-                        <input name="pass" type="password" placeholder="Password" className="input-login" />
-                        <button className="btn-login">LOGIN</button>
+                        <h2>Bus Cantuteño</h2>
+                        <input name="id" placeholder="Código o DNI" className="input-login" required />
+                        <input name="pass" type="password" placeholder="Contraseña" className="input-login" />
+                        <button className="btn-login">INGRESAR</button>
                     </form>
                 </div>
             );
@@ -129,28 +155,33 @@
             return (
                 <div>
                     <header className="header">
-                        <div><b>Movilidad UNE</b></div>
-                        <div style={{fontSize:'12px'}}>{user.name}</div>
+                        <div><b>Bus Cantuteño - Movilidad UNE</b></div>
+                        <div style={{fontSize:'12px'}}>{user.name} ({user.role})</div>
                     </header>
                     <div className="flex">
                         <nav className="side">
-                            {["Ruta UNI", "Ruta Bolognesi", "Ruta Puente Nuevo"].map(r => (
+                            {RUTAS_LIST.map(r => (
                                 <button key={r} onClick={() => setRutaSel(r)} className={`btn-ruta ${rutaSel === r ? 'active' : ''}`}>🚍 {r}</button>
                             ))}
                             <button onClick={()=>location.reload()} className="btn-ruta" style={{marginTop:'auto', color:'var(--red)'}}>Salir</button>
                         </nav>
                         <main className="main">
                             <div className="card">
-                                <h2>{user.role === 'Conductor' ? 'Panel de Control' : `Ubicación: ${rutaSel}`}</h2>
+                                <h2>{user.role === 'Conductor' ? 'Panel de Conducción' : `Ubicación: ${rutaSel}`}</h2>
+                                
                                 {user.role === 'Conductor' && (
-                                    <button 
-                                        onClick={toggleGPS} 
-                                        className="btn-login" 
-                                        style={{background: isTracking ? 'var(--red)' : 'var(--green)', width:'250px'}}
-                                    >
-                                        {isTracking ? '🛑 APAGAR GPS' : '📡 INICIAR GPS'}
-                                    </button>
+                                    <div style={{display:'flex', gap:'10px', justifyContent:'center'}}>
+                                        {/* Botón dinámico que cambia de Iniciar a Detener */}
+                                        <button 
+                                            onClick={toggleGPS} 
+                                            className="btn-login" 
+                                            style={{background: isTracking ? 'var(--red)' : 'var(--green)', width:'250px'}}
+                                        >
+                                            {isTracking ? '🛑 DETENER RASTREO' : '📡 INICIAR GPS'}
+                                        </button>
+                                    </div>
                                 )}
+                                
                                 <div id={user.role === 'Conductor' ? 'map-cond' : 'map-view'} className="map-box"></div>
                             </div>
                         </main>
