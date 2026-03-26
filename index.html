@@ -14,12 +14,12 @@
         .side { width: 280px; background: #fff; padding: 20px; display: flex; flex-direction: column; gap: 10px; border-right: 1px solid #e2e8f0; }
         .main { flex: 1; padding: 25px; overflow-y: auto; }
         .card { background: #fff; border-radius: 16px; padding: 20px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); border: 1px solid #f1f5f9; margin-bottom: 20px; }
-        .btn { padding: 12px; border-radius: 10px; border: 1px solid #e2e8f0; background: #fff; cursor: pointer; font-weight: 600; width: 100%; display: flex; align-items: center; gap: 10px; transition: 0.2s; text-decoration: none; color: inherit; }
+        .btn { padding: 12px; border-radius: 10px; border: 1px solid #e2e8f0; background: #fff; cursor: pointer; font-weight: 600; width: 100%; display: flex; align-items: center; gap: 10px; transition: 0.2s; text-decoration: none; color: inherit; font-size: 14px; }
         .btn:hover { background: #f8fafc; border-color: var(--blue); }
-        .btn-p { background: var(--blue); color: #fff; border: none; justify-content: center; }
+        .btn-p { background: var(--blue); color: #fff; border: none; justify-content: center; font-size: 16px; }
         .btn.active { background: var(--blue); color: #fff; border-color: var(--blue); }
         .grid-maps { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; }
-        .map-box { background: #eee; height: 180px; border-radius: 12px; position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center; }
+        .map-box { background: #eee; height: 180px; border-radius: 12px; display: flex; align-items: center; justify-content: center; position: relative; }
         .status { font-size: 11px; font-weight: 800; padding: 4px 8px; border-radius: 6px; text-transform: uppercase; }
         .st-red { background: #fee2e2; color: #b91c1c; }
         .st-green { background: #dcfce7; color: #166534; }
@@ -50,7 +50,6 @@
             const enviarReporte = (motivo) => {
                 const nuevoReporte = {
                     id: Date.now(),
-                    fecha: new Date().toLocaleDateString(),
                     hora: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
                     conductor: RUTAS_DATA[rutaSel].cond,
                     placa: RUTAS_DATA[rutaSel].placa,
@@ -58,13 +57,13 @@
                     motivo: motivo
                 };
                 setReportes([nuevoReporte, ...reportes]);
-                alert("🚨 Reporte enviado al Panel Administrativo.");
+                alert("🚨 Reporte enviado con éxito.");
             };
 
             const copiarTexto = (ruta) => {
                 const texto = `📌 *ESTADO DE RUTA*\n📍 RUTA: ${ruta}\n🚌 PARADERO ACTUAL: Puente Santa Anita\n⏰ TIEMPO ESTIMADO: 15 min`;
                 navigator.clipboard.writeText(texto);
-                alert("Texto copiado para informar a los alumnos.");
+                alert("Datos de ruta copiados.");
             };
 
             if (!user.logged) return (
@@ -74,9 +73,10 @@
                     </div>
                     <div className="login-screen" style={{background: '#fff'}}>
                         <form onSubmit={(e) => { e.preventDefault(); setUser({logged:true, role: e.target.rol.value, name: e.target.user.value}); }} style={{width: '320px', display:'flex', flexDirection:'column', gap:'15px'}}>
-                            <h2 style={{textAlign: 'center'}}>Bienvenido</h2>
+                            <h2 style={{textAlign: 'center'}}>Iniciar Sesión</h2>
                             <select name="rol" className="btn">
                                 <option value="Estudiante">Estudiante</option>
+                                <option value="Conductor">Conductor</option>
                                 <option value="Administrativo">Administrativo</option>
                                 <option value="Coadmin">Coadministrador (Lector)</option>
                             </select>
@@ -96,14 +96,14 @@
                             <small className="status st-green">{user.role}</small>
                         </div>
                         
-                        {(user.role === 'Estudiante' || user.role === 'Coadmin') && Object.keys(RUTAS_DATA).map(r => (
+                        {(user.role !== 'Administrativo') && Object.keys(RUTAS_DATA).map(r => (
                             <button key={r} onClick={()=>setRutaSel(r)} className={`btn ${rutaSel===r?'active':''}`}>🚍 {r}</button>
                         ))}
 
                         {user.role === 'Administrativo' && (
                             <>
-                                <button className="btn active">📊 Reportes y Mapas</button>
-                                <button className="btn">⚙️ Configuración</button>
+                                <button className="btn active">📊 Reportes y Multivista</button>
+                                <button className="btn">👥 Gestionar Co-Admins</button>
                             </>
                         )}
 
@@ -111,60 +111,61 @@
                     </div>
 
                     <main className="main">
+                        {/* PANEL ESTUDIANTE */}
                         {user.role === 'Estudiante' && (
                             <div className="card">
                                 <h1 style={{color: 'var(--red)', marginTop: 0}}>{rutaSel.toUpperCase()}</h1>
                                 <div className="grid-maps" style={{gridTemplateColumns:'1.2fr 1fr'}}>
                                     <div>
-                                        <p style={{color: 'var(--text-sub)'}}>¿Hubo un problema con la ruta?</p>
-                                        <button onClick={()=>enviarReporte("Bus no paró estando vacío")} className="btn" style={{color:'var(--red)', borderColor:'var(--red)', marginBottom:'15px'}}>🚨 El bus no paró (Vacio)</button>
-                                        
-                                        <b style={{display:'block', marginBottom:'10px'}}>Enlaces de ayuda:</b>
-                                        <a href={RUTAS_DATA[rutaSel].link} target="_blank" className="btn" style={{marginBottom:'10px'}}>💬 WhatsApp de la {rutaSel}</a>
-                                        <a href={CANAL_WHATSAPP} target="_blank" className="btn">📢 Canal de WhatsApp (Anuncios)</a>
+                                        <p>Reportar incidencia:</p>
+                                        <button onClick={()=>enviarReporte("Bus no paró estando vacío")} className="btn" style={{color:'var(--red)', borderColor:'var(--red)', marginBottom:'15px'}}>🚨 El bus no paró (Vacío)</button>
+                                        <b style={{display:'block', marginBottom:'10px'}}>Enlaces Rápidos:</b>
+                                        <a href={RUTAS_DATA[rutaSel].link} target="_blank" className="btn" style={{marginBottom:'10px'}}>💬 WhatsApp {rutaSel}</a>
+                                        <a href={CANAL_WHATSAPP} target="_blank" className="btn">📢 Canal Oficial (Anuncios)</a>
                                     </div>
-                                    <div className="map-box" style={{height: '300px'}}>📍 Cargando Mapa en tiempo real...</div>
+                                    <div className="map-box" style={{height: '350px'}}>📍 Mapa en vivo...</div>
                                 </div>
                             </div>
                         )}
 
+                        {/* PANEL CONDUCTOR */}
+                        {user.role === 'Conductor' && (
+                            <div className="card">
+                                <h2>Panel Conductor: {rutaSel}</h2>
+                                <p>Placa: <b>{RUTAS_DATA[rutaSel].placa}</b> | Unidad asignada</p>
+                                <div className="map-box" style={{height: '300px', marginBottom: '20px'}}>📍 GPS Detectado</div>
+                                <div style={{display:'flex', gap:'10px'}}>
+                                    <button className="btn btn-p" style={{flex:2}}>📢 COMPARTIR MI UBICACIÓN</button>
+                                    <button onClick={()=>alert("Alerta de bus lleno enviada")} className="btn" style={{flex:1, color:'var(--red)'}}>⏰ BUS LLENO</button>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* PANEL ADMINISTRATIVO */}
                         {user.role === 'Administrativo' && (
                             <>
-                                <h2>Control General Administrativo</h2>
+                                <h2>Multivista de Rutas</h2>
                                 <div className="grid-maps" style={{marginBottom:'30px'}}>
                                     {Object.keys(RUTAS_DATA).map(r => (
                                         <div key={r} className="card" style={{padding:'10px', margin:0}}>
                                             <div style={{display:'flex', justifyContent:'space-between', marginBottom:'10px'}}>
-                                                <b>{r}</b>
-                                                <button onClick={()=>copiarTexto(r)} style={{fontSize:'10px', cursor:'pointer', padding:'4px'}}>📋 Enviar Datos</button>
+                                                <b style={{fontSize:'12px'}}>{r}</b>
+                                                <button onClick={()=>copiarTexto(r)} style={{fontSize:'10px', cursor:'pointer'}}>📋 Enviar Datos</button>
                                             </div>
-                                            <div className="map-box" style={{height:'120px'}}>🗺️ GPS Activo</div>
-                                            <div style={{fontSize:'11px', marginTop:'10px', color: 'var(--text-sub)'}}>
-                                                <b>{RUTAS_DATA[r].placa}</b> | {RUTAS_DATA[r].cond}
-                                            </div>
+                                            <div className="map-box" style={{height:'100px'}}>🗺️ Vista GPS</div>
                                         </div>
                                     ))}
                                 </div>
 
                                 <div className="card">
-                                    <h3>🚩 Historial de Reportes</h3>
+                                    <h3>🚩 Reportes Recibidos</h3>
                                     <table>
-                                        <thead>
-                                            <tr>
-                                                <th>Hora</th>
-                                                <th>Ruta</th>
-                                                <th>Placa / Cond.</th>
-                                                <th>Incidencia</th>
-                                                <th>Estado</th>
-                                            </tr>
-                                        </thead>
+                                        <thead><tr><th>Hora</th><th>Ruta</th><th>Placa</th><th>Incidencia</th><th>Acción</th></tr></thead>
                                         <tbody>
                                             {reportes.length === 0 ? <tr><td colSpan="5" style={{textAlign:'center'}}>Sin reportes nuevos</td></tr> : 
                                                 reportes.map(rep => (
                                                 <tr key={rep.id}>
-                                                    <td>{rep.hora}</td>
-                                                    <td>{rep.ruta}</td>
-                                                    <td>{rep.placa}</td>
+                                                    <td>{rep.hora}</td><td>{rep.ruta}</td><td>{rep.placa}</td>
                                                     <td><span className="status st-red">{rep.motivo}</span></td>
                                                     <td><button className="status st-green" style={{border:'none', cursor:'pointer'}}>Archivar</button></td>
                                                 </tr>
@@ -176,26 +177,25 @@
                                 <div className="card">
                                     <h3>👥 Co-Administradores (Lectores)</h3>
                                     <div style={{display:'flex', gap:'10px', marginBottom:'15px'}}>
-                                        <input id="newCo" placeholder="Nombre completo" className="btn" style={{width:'200px'}} />
+                                        <input id="newCo" placeholder="Nombre" className="btn" style={{width:'200px'}} />
                                         <button onClick={()=>{
-                                            const val = document.getElementById('newCo').value;
-                                            if(val) setCoAdmins([...coAdmins, {id: Date.now(), name: val, role: 'Lector'}]);
-                                        }} className="btn btn-p" style={{width:'150px'}}>Agregar</button>
+                                            const v = document.getElementById('newCo').value;
+                                            if(v) setCoAdmins([...coAdmins, {id: Date.now(), name: v, role: 'Lector'}]);
+                                        }} className="btn btn-p" style={{width:'100px'}}>Añadir</button>
                                     </div>
                                     {coAdmins.map(co => (
-                                        <div key={co.id} style={{padding:'10px', borderBottom:'1px solid #eee', display:'flex', justifyContent:'space-between'}}>
-                                            <span>👤 {co.name}</span>
-                                            <span className="status st-green">Solo Lectura</span>
+                                        <div key={co.id} style={{padding:'8px', borderBottom:'1px solid #eee', display:'flex', justifyContent:'space-between'}}>
+                                            <span>👤 {co.name}</span><span className="status st-green">Lector</span>
                                         </div>
                                     ))}
                                 </div>
                             </>
                         )}
 
+                        {/* PANEL CO-ADMIN (LECTOR) */}
                         {user.role === 'Coadmin' && (
                             <div className="card">
-                                <h2>Vista de Monitoreo (Lector)</h2>
-                                <p>Bienvenido. Tienes acceso a visualizar los 4 mapas de rutas.</p>
+                                <h2>Vista de Monitoreo Lector</h2>
                                 <div className="grid-maps">
                                     {Object.keys(RUTAS_DATA).map(r => (
                                         <div key={r} className="map-box" style={{height: '200px'}}>🗺️ Mapa {r}</div>
